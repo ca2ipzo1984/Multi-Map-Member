@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🗺️ LINE SQUAD LIVE MAP</title>
+
+  <!-- 1. LINE LIFF SDK 2.x -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <!-- 2. แผนที่ Leaflet (ฟรี 100% ไม่ต้องเสียเงิน Google Maps) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0f19; color: #fff; }
+    #map { width: 100%; height: 100%; }
+
+    /* ป้ายหัวด้านบน */
+    .top-bar {
+      position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1000;
+      background: rgba(15, 23, 42, 0.92); border: 1px solid #334155;
+      padding: 8px 12px; border-radius: 12px; backdrop-filter: blur(8px);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+    .user-avatar-mini { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #06c755; }
+
+    /* ปุ่มลอย */
+    .fab-group { position: absolute; right: 12px; top: 65px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+    .btn-fab {
+      width: 44px; height: 44px; border-radius: 50%; border: 1px solid #475569;
+      background: #1e293b; color: #fff; font-size: 1.2rem; cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .btn-fab.active { background: #ef4444; border-color: #fff; }
+
+    /* แดชบอร์ดด้านล่าง */
+    .bottom-panel {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(15, 23, 42, 0.95); border-top: 1px solid #334155;
+      padding: 10px 14px; border-radius: 16px 16px 0 0; max-height: 200px;
+    }
+    .target-box {
+      background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444;
+      border-radius: 8px; padding: 6px 10px; font-size: 0.8rem; margin-bottom: 6px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .member-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+    .member-card {
+      background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+      padding: 6px 8px; min-width: 120px; font-size: 0.72rem; flex-shrink: 0;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .member-card.is-me { border-color: #06c755; background: rgba(6, 199, 85, 0.1); }
+    .member-card-img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
+
+    /* หมุดโปรไฟล์บนแผนที่ */
+    .line-user-pin { text-align: center; }
+    .pin-img {
+      width: 38px; height: 38px; border-radius: 50%; border: 2.5px solid #06c755;
+      box-shadow: 0 0 10px rgba(6,199,85,0.7); object-fit: cover; background: #000;
+    }
+    .pin-name {
+      background: rgba(0,0,0,0.85); color: #fff; font-size: 0.65rem; font-weight: bold;
+      padding: 1px 6px; border-radius: 8px; border: 1px solid #06c755; white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- แถบด้านบน: โชว์โปรไฟล์ LINE ของเรา -->
+  <div class="top-bar">
+    <div class="user-profile-badge">
+      <img id="myAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="user-avatar-mini">
+      <span id="myNameText">กำลังโหลด LINE...</span>
+    </div>
+    <div style="font-size:0.75rem; color:#06c755; font-weight:bold;">● ซิงก์สด (<span id="userCount">0</span>)</div>
+  </div>
+
+  <!-- ปุ่มลอย -->
+  <div class="fab-group">
+    <button class="btn-fab" id="btnMyLoc" title="พิกัดของฉัน">📍</button>
+    <button class="btn-fab" id="btnSetTarget" title="ปักหมุดจุดนัดพบ">🚩</button>
+    <button class="btn-fab" id="btnShareLine" title="แชร์เข้ากลุ่ม LINE">📤</button>
+  </div>
+
+  <!-- แผนที่ -->
+  <div id="map"></div>
+
+  <!-- แดชบอร์ดล่าง -->
+  <div class="bottom-panel">
+    <div class="target-box">
+      <div><b>🚩 นัดพบ:</b> <span id="targetNameDisplay">ยังไม่ได้กำหนด</span></div>
+      <span style="font-size:0.7rem; color:#cbd5e1;">(กด 🚩 เพื่อปักหมุด)</span>
+    </div>
+    <div class="member-scroll" id="memberList"></div>
+  </div>
+
+  <script>
+    // ==========================================================================
+    // 🔴 1. ตั้งค่า LIFF ID และ URL Apps Script
+    // ==========================================================================
+    const MY_LIFF_ID = "ใส่_LIFF_ID_ของมึงตรงนี้"; // ได้จาก LINE Developers Console
+    const BACKEND_URL = "ใส่_URL_WEB_APP_APPS_SCRIPT_ตรงนี้";
+
+    let myUserId = "GUEST_" + Math.floor(Math.random() * 1000);
+    let myName = "เพื่อนร่วมทาง";
+    let myAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+    let myLat = 13.7563, myLng = 100.5018;
+    let currentTarget = null, isTargetMode = false;
+    let markers = {}, targetMarker = null;
+
+    // เริ่มสร้างแผนที่
+    const map = L.map('map', { zoomControl: false }).setView([myLat, myLng], 14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+    // ==========================================================================
+    // 2. ดึงโปรไฟล์ LINE อัตโนมัติผ่าน LIFF SDK
+    // ==========================================================================
+    async function initLineLiff() {
+      try {
+        await liff.init({ liffId: MY_LIFF_ID });
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          myUserId = profile.userId;
+          myName = profile.displayName;
+          myAvatar = profile.pictureUrl || myAvatar;
+
+          document.getElementById("myNameText").textContent = myName;
+          document.getElementById("myAvatarImg").src = myAvatar;
+        } else {
+          // หากเปิดนอก LINE ให้ล็อกอิน
+          liff.login();
+        }
+      } catch (err) {
+        console.warn("LIFF fallback:", err);
+        document.getElementById("myNameText").textContent = myName;
+      }
+    }
+    initLineLiff();
+
+    // ==========================================================================
+    // 3. ขอพิกัด GPS สดจากมือถือ
+    // ==========================================================================
+    if ("geolocation" in navigator) {
+      navigator.geolocation.watchPosition((pos) => {
+        myLat = pos.coords.latitude;
+        myLng = pos.coords.longitude;
+        const spd = pos.coords.speed ? (pos.coords.speed * 3.6).toFixed(0) : 0;
+        sendLocation(myLat, myLng, spd);
+      }, (e) => console.log(e), { enableHighAccuracy: true });
+    }
+
+    async function sendLocation(lat, lng, spd) {
+      if (BACKEND_URL.includes("ใส่_URL")) return;
+      const q = new URLSearchParams({
+        action: "UPDATE_LOC", id: myUserId, name: myName, avatar: myAvatar,
+        lat: lat, lng: lng, speed: spd
+      });
+      try { fetch(`${BACKEND_URL}?${q.toString()}`, { mode: "no-cors" }); } catch (e) {}
+    }
+
+    // ==========================================================================
+    // 4. ซิงก์ดึงข้อมูลเพื่อน 10 คนทุก 4 วินาที
+    // ==========================================================================
+    async function syncMap() {
+      if (BACKEND_URL.includes("ใส่_URL")) return;
+      try {
+        const res = await fetch(`${BACKEND_URL}?action=GET_STATE`);
+        const data = await res.json();
+        if (data.status === 'ok') {
+          renderTarget(data.target);
+          renderSquad(data.members || []);
+        }
+      } catch (e) {}
+    }
+    setInterval(syncMap, 4000);
+    syncMap();
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    function renderTarget(t) {
+      currentTarget = t;
+      const label = document.getElementById("targetNameDisplay");
+      if (!t || !t.lat) {
+        label.textContent = "ยังไม่ได้กำหนด";
+        if (targetMarker) map.removeLayer(targetMarker);
+        return;
+      }
+      label.textContent = `${t.name} (โดย: ${t.by})`;
+      if (!targetMarker) {
+        targetMarker = L.marker([t.lat, t.lng], {
+          icon: L.divIcon({ html: '🚩', className: '', iconSize: [32, 32] })
+        }).addTo(map);
+      } else {
+        targetMarker.setLatLng([t.lat, t.lng]);
+      }
+    }
+
+    function renderSquad(members) {
+      document.getElementById("userCount").textContent = members.length;
+      const listEl = document.getElementById("memberList");
+      listEl.innerHTML = "";
+
+      members.forEach(m => {
+        let dist = "-";
+        if (currentTarget && currentTarget.lat) {
+          const d = getDistance(m.lat, m.lng, currentTarget.lat, currentTarget.lng);
+          dist = d < 1 ? (d * 1000).toFixed(0) + " ม." : d.toFixed(1) + " กม.";
+        }
+
+        // หมุดรูปโปรไฟล์ LINE บนแผนที่
+        if (!markers[m.id]) {
+          const pinHtml = `
+            <div class="line-user-pin">
+              <span class="pin-name">${m.name}</span><br>
+              <img src="${m.avatar}" class="pin-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+            </div>
+          `;
+          markers[m.id] = L.marker([m.lat, m.lng], {
+            icon: L.divIcon({ html: pinHtml, className: '', iconSize: [40, 50], iconAnchor: [20, 45] })
+          }).addTo(map);
+        } else {
+          markers[m.id].setLatLng([m.lat, m.lng]);
+        }
+
+        // การ์ดรายชื่อด้านล่าง
+        const card = document.createElement("div");
+        card.className = `member-card ${m.id === myUserId ? 'is-me' : ''}`;
+        card.onclick = () => map.panTo([m.lat, m.lng]);
+        card.innerHTML = `
+          <img src="${m.avatar}" class="member-card-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+          <div>
+            <div><b>${m.name}</b></div>
+            <div style="color:#f59e0b; font-size:0.65rem;">🎯 ${dist}</div>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    // แตะแผนที่เพื่อตั้งเป้าหมาย
+    document.getElementById("btnSetTarget").onclick = () => {
+      isTargetMode = !isTargetMode;
+      document.getElementById("btnSetTarget").classList.toggle("active", isTargetMode);
+      if (isTargetMode) alert("📍 แตะบนแผนที่เพื่อตั้งเป้าหมายจุดนัดพบรวมของกลุ่ม!");
+    };
+
+    map.on('click', async (e) => {
+      if (!isTargetMode) return;
+      const name = prompt("🚩 ตั้งชื่อจุดนัดพบนี้:", "จุดนัดหมายกลุ่ม");
+      if (!name) return;
+      isTargetMode = false;
+      document.getElementById("btnSetTarget").classList.remove("active");
+
+      const q = new URLSearchParams({ action: "SET_TARGET", targetName: name, lat: e.latlng.lat, lng: e.latlng.lng, setBy: myName });
+      await fetch(`${BACKEND_URL}?${q.toString()}`);
+      syncMap();
+    });
+
+    document.getElementById("btnMyLoc").onclick = () => map.setView([myLat, myLng], 16);
+
+    // ปุ่มแชร์เข้าห้องแชท LINE กลุ่ม
+    document.getElementById("btnShareLine").onclick = () => {
+      if (liff.isApiAvailable('shareTargetPicker')) {
+        liff.shareTargetPicker([
+          {
+            type: "text",
+            text: `🗺️ เปิดดูแผนที่พิกัดแก๊งสด & จุดนัดพบรวม:\nhttps://liff.line.me/${MY_LIFF_ID}`
+          }
+        ]);
+      } else {
+        alert("คัดลอกลิงก์ส่งเข้า LINE กลุ่มได้เลย:\nhttps://liff.line.me/" + MY_LIFF_ID);
+      }
+    };
+  </script>
+</body>
+</html>
