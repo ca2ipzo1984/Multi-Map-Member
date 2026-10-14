@@ -3,20 +3,169 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🗂️ U-Nhai</title>
+  <title>🗂️ U-Nhai // รวมแผนที่แก๊ง</title>
 
-  <link rel="icon" type="image/jpeg" href="data:image/jpeg;base64,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" class="brand-logo-img" alt="U-Nhai Logo">
+  <!-- 1. LINE LIFF SDK 2.x -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  
+  <!-- 2. Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background: #0b0f19 !important; color: #fff !important; min-height: 100vh; padding: 16px; padding-bottom: 95px; }
+
+    .header-branding {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 18px; padding: 6px 0;
+    }
+    .brand-logo-badge {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 10px; border: 2px solid #06c755;
+      background: #0f172a; box-shadow: 0 0 15px rgba(6,199,85,0.7); flex-shrink: 0;
+    }
+    .brand-title-text { font-size: 1.3rem; font-weight: bold; color: #f8fafc; letter-spacing: 0.5px; }
+
+    .profile-card {
+      background: #1e293b; border: 1px solid #334155; border-radius: 16px;
+      padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      cursor: pointer; transition: border-color 0.2s ease;
+    }
+    .profile-card:hover { border-color: #38bdf8; }
+    .profile-info { display: flex; align-items: center; gap: 12px; }
+    .avatar-lg {
+      width: 48px !important; height: 48px !important; min-width: 48px !important; max-width: 48px !important;
+      border-radius: 50% !important; border: 2.5px solid #06c755 !important;
+      object-fit: cover !important; background: #0f172a; flex-shrink: 0 !important;
+    }
+    .profile-name { font-size: 1rem; font-weight: bold; color: #f8fafc; }
+    .profile-sub { font-size: 0.75rem; color: #94a3b8; }
+    .btn-profile-manage {
+      background: #0f172a; border: 1px solid #38bdf8; color: #38bdf8;
+      font-size: 0.72rem; padding: 4px 10px; border-radius: 10px; font-weight: bold;
+    }
+
+    .section-title {
+      font-size: 1.05rem; font-weight: bold; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center; color: #cbd5e1;
+    }
+
+    .project-grid { display: flex; flex-direction: column; gap: 12px; }
+    .project-card {
+      background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: border-color 0.2s ease;
+    }
+    .project-card:hover { border-color: #38bdf8; }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .project-name { font-size: 1rem; font-weight: bold; color: #f8fafc; word-break: break-word; }
+    .room-badge {
+      background: #0f172a; border: 1px solid #38bdf8; color: #38bdf8;
+      font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; white-space: nowrap;
+    }
+    .card-meta { font-size: 0.75rem; color: #94a3b8; }
+
+    .card-actions { display: flex; gap: 8px; margin-top: 4px; }
+    .btn-action {
+      flex: 1; padding: 10px 12px; border-radius: 8px; font-size: 0.82rem;
+      font-weight: bold; border: none; cursor: pointer; text-align: center; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .btn-enter { background: #06c755; color: #fff; }
+    .btn-share { background: #2563eb; color: #fff; }
+    .btn-del { background: #334155; color: #ef4444; flex: 0 0 40px; font-size: 1rem; }
+
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.96);
+      border-top: 1px solid #334155; padding: 14px 16px; z-index: 1000;
+      backdrop-filter: blur(8px);
+    }
+    .btn-create-main {
+      width: 100%; background: linear-gradient(135deg, #06c755, #059669);
+      color: #fff; border: none; border-radius: 12px; padding: 14px;
+      font-size: 1rem; font-weight: bold; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 15px rgba(6,199,85,0.4);
+    }
+
+    #modalCreate {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
+      display: none; align-items: center; justify-content: center; padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .modal-box {
+      background: #1e293b; border: 1px solid #475569; border-radius: 16px;
+      width: 100%; max-width: 360px; padding: 20px; text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .modal-title { font-size: 1.15rem; font-weight: bold; margin-bottom: 12px; color: #fff; }
+    .modal-input {
+      width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px;
+      padding: 12px; color: #fff; font-size: 0.9rem; outline: none; margin-bottom: 16px;
+    }
+    .modal-buttons { display: flex; gap: 10px; }
+    .btn-modal { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; font-size: 0.9rem; }
+    .btn-modal-cancel { background: #334155; color: #cbd5e1; }
+    .btn-modal-ok { background: #06c755; color: #fff; }
+
+    /* Modal จัดการบัญชี */
+    #modalAccount {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000;
+      display: none; align-items: center; justify-content: center; padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .account-card {
+      background: #1e293b; border: 1px solid #475569; border-radius: 20px;
+      width: 100%; max-width: 340px; padding: 24px; text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .acc-avatar {
+      width: 72px; height: 72px; border-radius: 50%; border: 3px solid #06c755;
+      margin: 0 auto 12px; object-fit: cover; box-shadow: 0 0 15px rgba(6,199,85,0.6);
+      background: #0f172a;
+    }
+    .acc-name { font-size: 1.15rem; font-weight: bold; color: #fff; margin-bottom: 4px; }
+    .acc-id { font-size: 0.75rem; color: #94a3b8; margin-bottom: 20px; word-break: break-all; }
+    .btn-acc {
+      width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.9rem;
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-bottom: 10px; text-decoration: none;
+    }
+    .btn-acc-line { background: #06c755; color: #fff; }
+    .btn-acc-google { background: #fff; color: #1f2937; }
+    .btn-acc-logout { background: #ef4444; color: #fff; margin-top: 8px; }
+    .btn-acc-close { background: #334155; color: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+  <!-- แบรนด์ดิ้งโลโก้หัวหน้าเว็บแบบ SVG คมกริบ ไม่แตก ไม่เสียรูป -->
+  <div class="header-branding">
+    <div class="brand-logo-badge">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#06c755" stroke="#ffffff" stroke-width="1.5"/>
+        <circle cx="12" cy="9" r="3" fill="#ffffff"/>
+      </svg>
+    </div>
     <div class="brand-title-text">📍 U-Nhai</div>
   </div>
 
-  <div class="profile-card">
+  <!-- การ์ดโปรไฟล์ส่วนหัว (กดเพื่อจัดการบัญชี/ล็อกอิน/ล็อกเอาท์) -->
+  <div class="profile-card" id="btnProfileCard" title="แตะเพื่อจัดการบัญชีผู้ใช้">
     <div class="profile-info">
-      <img id="userAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar-lg" referrerpolicy="no-referrer">
+      <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" style="width:48px; height:48px; min-width:48px; max-width:48px; border-radius:50%; border:2.5px solid #06c755; object-fit:cover; flex-shrink:0; background:#0f172a;" class="avatar-lg" referrerpolicy="no-referrer">
       <div>
         <div class="profile-name" id="userName">กำลังเชื่อมต่อ LINE...</div>
-        <div class="profile-sub">ศูนย์บัญชาการแผนที่แก๊งสด</div>
+        <div class="profile-sub" id="userSub">ศูนย์บัญชาการแผนที่แก๊งสด</div>
       </div>
     </div>
+    <div class="btn-profile-manage" id="btnProfileManageText">บัญชี ⚙️</div>
+  </div>
+
+  <div class="section-title">
+    <span id="sectionTitleText">🗺️ รายการแผนที่ของฉัน</span>
+    <span id="projectCount" class="room-badge">0 ห้อง</span>
   </div>
 
   <div class="project-grid" id="projectList">
@@ -27,13 +176,14 @@
 
   <div class="bottom-bar">
     <button class="btn-create-main" id="btnOpenCreate">
-      <span>➕</span> สร้างแผนที่กลุ่มใหม่
+      <span>➕</span> <span id="btnCreateText">สร้างแผนที่กลุ่มใหม่</span>
     </button>
   </div>
 
+  <!-- Modal สร้างห้องใหม่ -->
   <div id="modalCreate">
     <div class="modal-box">
-      <div class="modal-title">🚩 สร้างแผนที่กลุ่มใหม่</div>
+      <div class="modal-title" id="modalCreateTitle">🚩 สร้างแผนที่กลุ่มใหม่</div>
       <input type="text" class="modal-input" id="roomNameInput" placeholder="เช่น ทริปเขาใหญ่ 2026, ทีมไรเดอร์" maxlength="30">
       <div class="modal-buttons">
         <button class="btn-modal btn-modal-cancel" id="btnCancelModal">ยกเลิก</button>
@@ -42,73 +192,170 @@
     </div>
   </div>
 
+  <!-- Modal บัญชีผู้ใช้: จัดการล็อกอิน LINE / Google / Logout -->
+  <div id="modalAccount">
+    <div class="account-card">
+      <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="acc-avatar" referrerpolicy="no-referrer">
+      <div class="acc-name" id="accModalName">สหาย</div>
+      <div class="acc-id" id="accModalId">สถานะ: บัญชีชั่วคราว</div>
+
+      <div id="accLoginActions">
+        <button class="btn-acc btn-acc-line" id="btnAccLoginLine">
+          <span>💬</span> เข้าสู่ระบบด้วย LINE
+        </button>
+        <button class="btn-acc btn-acc-google" id="btnAccLoginGoogle">
+          <span>🌐</span> เข้าสู่ระบบด้วย Google
+        </button>
+      </div>
+
+      <button class="btn-acc btn-acc-logout" id="btnAccLogout">🚪 ออกจากระบบ (Log out)</button>
+      <button class="btn-acc btn-acc-close" id="btnAccCloseModal">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+
   <script>
     const MY_LIFF_ID = "2012010620-7LrsLOGx";
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
+    const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
-    // ระบบตรวจจับภาษาเริ่มต้นของเครื่อง (Default Device Language Detection)
-    const deviceLang = (navigator.language || navigator.userLanguage || 'th').toLowerCase();
-    const isThai = deviceLang.startsWith('th');
+    // ระบบตรวจจับภาษาเริ่มต้นของเครื่อง
+    const deviceLang = (navigator.language || navigator.userLanguage || "th").toLowerCase();
+    const isThai = deviceLang.startsWith("th");
 
     const i18n = {
-      title: isThai ? '🗂️ U-Nhai' : '🗂️ U-Nhai',
-      hqSub: isThai ? 'ศูนย์บัญชาการแผนที่แก๊งสด' : 'Squad Live GPS Command Hub',
-      connecting: isThai ? 'กำลังเชื่อมต่อ LINE...' : 'Connecting to LINE...',
-      noProjects: isThai ? 'ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างห้องแรกได้เลย!' : 'No squad maps yet<br>Tap green button below to create your first room!',
-      btnCreate: isThai ? 'สร้างแผนที่กลุ่มใหม่' : 'Create New Squad Map',
-      modalTitle: isThai ? '🚩 สร้างแผนที่กลุ่มใหม่' : '🚩 Create New Squad Map',
-      modalPlaceholder: isThai ? 'เช่น ทริปเขาใหญ่ 2026, ทีมไรเดอร์' : 'e.g. Roadtrip 2026, Delivery Squad',
-      modalCancel: isThai ? 'ยกเลิก' : 'Cancel',
-      modalOk: isThai ? 'สร้างห้องทันที' : 'Create Now',
-      createdLabel: isThai ? 'สร้างเมื่อ:' : 'Created:',
-      byLabel: isThai ? 'โดย' : 'by',
-      btnEnter: isThai ? '🗺️ เข้าแผนที่' : '🗺️ Open Map',
-      btnShare: isThai ? '📤 แชร์เข้า LINE' : '📤 Share to LINE',
-      confirmDel: isThai ? 'ต้องการลบแผนที่ห้องนี้ออกจากรายการของคุณใช่หรือไม่?' : 'Do you want to delete this room from your list?',
-      pleaseName: isThai ? 'กรุณาตั้งชื่อแผนที่กลุ่มก่อน!' : 'Please enter a squad map name!',
-      createSuccess: isThai ? 'สร้างแผนที่' : 'Squad Map',
-      done: isThai ? 'สำเร็จ!' : 'Created successfully!',
-      roomCode: isThai ? 'รหัสห้อง:' : 'Room Code:',
-      copied: isThai ? 'คัดลอกลิงก์ห้องเรียบร้อย!' : 'Room link copied!',
-      defaultUser: isThai ? 'สหาย' : 'Friend'
+      title: isThai ? "🗂️ U-Nhai // รวมแผนที่แก๊ง" : "🗂️ U-Nhai // Squad Maps",
+      hqSub: isThai ? "ศูนย์บัญชาการแผนที่แก๊งสด" : "Squad Live GPS Command Hub",
+      connecting: isThai ? "กำลังเชื่อมต่อ LINE..." : "Connecting to LINE...",
+      sectionTitle: isThai ? "🗺️ รายการแผนที่ของฉัน" : "🗺️ My Squad Maps",
+      noProjects: isThai ? "ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างห้องแรกได้เลย!" : "No squad maps yet<br>Tap green button below to create your first room!",
+      btnCreate: isThai ? "สร้างแผนที่กลุ่มใหม่" : "Create New Squad Map",
+      modalTitle: isThai ? "🚩 สร้างแผนที่กลุ่มใหม่" : "🚩 Create New Squad Map",
+      modalPlaceholder: isThai ? "เช่น ทริปเขาใหญ่ 2026, ทีมไรเดอร์" : "e.g. Roadtrip 2026, Delivery Squad",
+      modalCancel: isThai ? "ยกเลิก" : "Cancel",
+      modalOk: isThai ? "สร้างห้องทันที" : "Create Now",
+      createdLabel: isThai ? "สร้างเมื่อ:" : "Created:",
+      byLabel: isThai ? "โดย" : "by",
+      btnEnter: isThai ? "🗺️ เข้าแผนที่" : "🗺️ Open Map",
+      btnShare: isThai ? "📤 แชร์เข้า LINE" : "📤 Share to LINE",
+      confirmDel: isThai ? "ต้องการลบแผนที่ห้องนี้ออกจากรายการของคุณใช่หรือไม่?" : "Do you want to delete this room from your list?",
+      pleaseName: isThai ? "กรุณาตั้งชื่อแผนที่กลุ่มก่อน!" : "Please enter a squad map name!",
+      createSuccess: isThai ? "สร้างแผนที่" : "Squad Map",
+      done: isThai ? "สำเร็จ!" : "Created successfully!",
+      roomCode: isThai ? "รหัสห้อง:" : "Room Code:",
+      copied: isThai ? "คัดลอกลิงก์ห้องเรียบร้อย!\n" : "Room link copied!\n",
+      defaultUser: isThai ? "สหาย" : "Friend",
+      accTemp: isThai ? "⚠️ บัญชีชั่วคราว (กดล็อกอินด้านล่าง)" : "⚠️ Temporary Account (Log in below)",
+      accLogged: isThai ? "● บัญชี:" : "● Account:",
+      loginLine: isThai ? "เข้าสู่ระบบด้วย LINE" : "Log in with LINE",
+      loginGoogle: isThai ? "เข้าสู่ระบบด้วย Google" : "Log in with Google",
+      logoutBtn: isThai ? "🚪 ออกจากระบบ (Log out)" : "🚪 Log out",
+      closeBtn: isThai ? "ปิดหน้าต่าง" : "Close",
+      logoutConfirm: isThai ? "ต้องการออกจากระบบ (Log out) ใช่หรือไม่?\nข้อมูลเซสชันจะถูกรีเซ็ต" : "Do you want to log out?\nYour session will be reset.",
+      logoutDone: isThai ? "ออกจากระบบเรียบร้อย" : "Logged out successfully",
+      googlePrompt: isThai ? "กรอกชื่อหรืออีเมล Google สำหรับแสดงตัวตนในแผนที่:" : "Enter your name or Google email for identity on map:",
+      loggedAs: isThai ? "เข้าสู่ระบบในชื่อ" : "Logged in as"
     };
 
     document.title = i18n.title;
-    document.querySelector('.profile-sub').textContent = i18n.hqSub;
-    document.getElementById('btnOpenCreate').innerHTML = '<span>➕</span> ' + i18n.btnCreate;
-    document.querySelector('.modal-title').textContent = i18n.modalTitle;
-    document.getElementById('roomNameInput').placeholder = i18n.modalPlaceholder;
-    document.getElementById('btnCancelModal').textContent = i18n.modalCancel;
-    document.getElementById('btnConfirmCreate').textContent = i18n.modalOk;
-
+    const userSubEl = document.getElementById("userSub");
+    if (userSubEl) userSubEl.textContent = i18n.hqSub;
+    const secTitleEl = document.getElementById("sectionTitleText");
+    if (secTitleEl) secTitleEl.textContent = i18n.sectionTitle;
+    const btnCreateTextEl = document.getElementById("btnCreateText");
+    if (btnCreateTextEl) btnCreateTextEl.textContent = i18n.btnCreate;
+    const modalCreateTitleEl = document.getElementById("modalCreateTitle");
+    if (modalCreateTitleEl) modalCreateTitleEl.textContent = i18n.modalTitle;
+    const roomNameInputEl = document.getElementById("roomNameInput");
+    if (roomNameInputEl) roomNameInputEl.placeholder = i18n.modalPlaceholder;
+    const btnCancelModalEl = document.getElementById("btnCancelModal");
+    if (btnCancelModalEl) btnCancelModalEl.textContent = i18n.modalCancel;
+    const btnConfirmCreateEl = document.getElementById("btnConfirmCreate");
+    if (btnConfirmCreateEl) btnConfirmCreateEl.textContent = i18n.modalOk;
+    const btnLineEl = document.getElementById("btnAccLoginLine");
+    if (btnLineEl) btnLineEl.innerHTML = "<span>💬</span> " + i18n.loginLine;
+    const btnGEl = document.getElementById("btnAccLoginGoogle");
+    if (btnGEl) btnGEl.innerHTML = "<span>🌐</span> " + i18n.loginGoogle;
+    const btnLogoutEl = document.getElementById("btnAccLogout");
+    if (btnLogoutEl) btnLogoutEl.textContent = i18n.logoutBtn;
+    const btnCloseModalEl = document.getElementById("btnAccCloseModal");
+    if (btnCloseModalEl) btnCloseModalEl.textContent = i18n.closeBtn;
 
     let myProfile = {
-      userId: localStorage.getItem("SQUAD_UID") || "",
+      userId: localStorage.getItem("SQUAD_UID") || ("U_" + Date.now().toString().slice(-6)),
       name: localStorage.getItem("SQUAD_UNAME") || i18n.defaultUser,
-      avatar: localStorage.getItem("SQUAD_UAVATAR") || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+      avatar: localStorage.getItem("SQUAD_UAVATAR") || DEFAULT_AVATAR,
+      provider: localStorage.getItem("SQUAD_AUTH_PROVIDER") || ""
     };
+    localStorage.setItem("SQUAD_UID", myProfile.userId);
+
+    function updateDashboardUI() {
+      const nameEl = document.getElementById("userName");
+      if (nameEl) nameEl.textContent = myProfile.name;
+      const avatarEl = document.getElementById("userAvatar");
+      if (avatarEl) avatarEl.src = myProfile.avatar;
+
+      const accAvatar = document.getElementById("accModalAvatar");
+      if (accAvatar) accAvatar.src = myProfile.avatar;
+      const accName = document.getElementById("accModalName");
+      if (accName) accName.textContent = myProfile.name;
+
+      const accIdEl = document.getElementById("accModalId");
+      const loginActions = document.getElementById("accLoginActions");
+      const btnLogout = document.getElementById("btnAccLogout");
+
+      if (myProfile.provider) {
+        if (accIdEl) accIdEl.innerHTML = `<span style="color:#06c755; font-weight:bold;">● ${i18n.accLogged} ${myProfile.provider === "line" ? "LINE" : "Google"} (${myProfile.userId.slice(-6)})</span>`;
+        if (loginActions) loginActions.style.display = "none";
+        if (btnLogout) btnLogout.style.display = "block";
+      } else {
+        if (accIdEl) accIdEl.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">${i18n.accTemp}</span>`;
+        if (loginActions) loginActions.style.display = "block";
+        if (btnLogout) btnLogout.style.display = "none";
+      }
+    }
+    updateDashboardUI();
 
     async function initDashboardLiff() {
       try {
+        if (typeof liff === "undefined") {
+          console.warn("LIFF SDK not found");
+          updateDashboardUI();
+          renderProjects();
+          return;
+        }
+
         await liff.init({ liffId: MY_LIFF_ID });
         if (liff.isLoggedIn()) {
-          const p = await liff.getProfile();
-          myProfile.userId = p.userId;
-          myProfile.name = p.displayName;
-          myProfile.avatar = p.pictureUrl || myProfile.avatar;
+          try {
+            const p = await liff.getProfile();
+            myProfile.userId = p.userId;
+            myProfile.name = p.displayName || myProfile.name;
+            myProfile.avatar = p.pictureUrl || myProfile.avatar;
+            myProfile.provider = "line";
+          } catch (pe) {
+            const idToken = liff.getDecodedIDToken();
+            if (idToken) {
+              myProfile.userId = idToken.sub || myProfile.userId;
+              myProfile.name = idToken.name || myProfile.name;
+              myProfile.avatar = idToken.picture || myProfile.avatar;
+              myProfile.provider = "line";
+            }
+          }
 
           localStorage.setItem("SQUAD_UID", myProfile.userId);
           localStorage.setItem("SQUAD_UNAME", myProfile.name);
           localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar);
-
-          document.getElementById("userName").textContent = myProfile.name;
-          document.getElementById("userAvatar").src = myProfile.avatar;
+          localStorage.setItem("SQUAD_AUTH_PROVIDER", "line");
         } else {
-          liff.login();
+          if (liff.isInClient()) {
+            liff.login();
+            return;
+          }
         }
       } catch (e) {
         console.warn("LIFF Dashboard fallback:", e);
-        document.getElementById("userName").textContent = myProfile.name;
       }
+      updateDashboardUI();
       renderProjects();
     }
     initDashboardLiff();
@@ -125,7 +372,10 @@
     function renderProjects() {
       const list = getStoredProjects();
       const container = document.getElementById("projectList");
-      document.getElementById("projectCount").textContent = `${list.length} ห้อง`;
+      const countEl = document.getElementById("projectCount");
+      if (countEl) countEl.textContent = `${list.length} ${isThai ? "ห้อง" : "Rooms"}`;
+
+      if (!container) return;
 
       if (!list.length) {
         container.innerHTML = `
@@ -137,8 +387,7 @@
 
       container.innerHTML = "";
       list.forEach((p, idx) => {
-        const shareLink = `https://liff.line.me/${MY_LIFF_ID}?room=${p.roomId}`;
-        const enterLink = `LiffMap.html?room=${p.roomId}`;
+        const enterLink = `LiffMap.html?room=${encodeURIComponent(p.roomId)}`;
 
         const card = document.createElement("div");
         card.className = "project-card";
@@ -178,9 +427,7 @@
       }
 
       const roomId = "ROOM-" + Math.floor(1000 + Math.random() * 9000);
-      const nowStr = isThai
-        ? new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })
-        : new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+      const nowStr = new Date().toLocaleDateString(isThai ? "th-TH" : "en-US", { day: "numeric", month: "short", year: "2-digit" });
 
       const newProj = {
         roomId: roomId,
@@ -197,13 +444,13 @@
       alert(`✅ ${i18n.createSuccess} [${name}] ${i18n.done}\n${i18n.roomCode} ${roomId}`);
     };
 
-        window.shareProject = (name, roomId) => {
+    window.shareProject = (name, roomId) => {
       const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${roomId}`;
-      if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
+      if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable("shareTargetPicker")) {
         liff.shareTargetPicker([
           {
             type: "flex",
-            altText: `📍 ${name}`,
+            altText: `📍 แผนที่สด: [${name}]`,
             contents: {
               type: "bubble",
               size: "kilo",
@@ -223,7 +470,7 @@
                 spacing: "md",
                 contents: [
                   { type: "text", text: name, weight: "bold", size: "lg", color: "#ffffff" },
-                  { type: "text", text: isThai ? "🗺️ ชวนเข้าดูพิกัดสดและตำแหน่งแก๊งแบบเรียลไทม์" : "🗺️ Realtime live squad GPS tracking", size: "xs", color: "#94a3b8" }
+                  { type: "text", text: "🗺️ ชวนเข้าดูพิกัดสดและตำแหน่งแก๊งแบบเรียลไทม์", size: "xs", color: "#94a3b8" }
                 ]
               },
               footer: {
@@ -249,7 +496,7 @@
         ]);
       } else {
         navigator.clipboard.writeText(shareUrl);
-        alert(i18n.copied);
+        alert(i18n.copied + shareUrl);
       }
     };
 
@@ -258,6 +505,74 @@
         const list = getStoredProjects();
         list.splice(index, 1);
         saveProjects(list);
+      }
+    };
+
+    // ระบบจัดการบัญชี (Account Modal)
+    const modalAcc = document.getElementById("modalAccount");
+    const btnProfileCard = document.getElementById("btnProfileCard");
+    if (btnProfileCard) {
+      btnProfileCard.onclick = () => {
+        updateDashboardUI();
+        if (modalAcc) modalAcc.style.display = "flex";
+      };
+    }
+    const btnAccClose = document.getElementById("btnAccCloseModal");
+    if (btnAccClose) {
+      btnAccClose.onclick = () => {
+        if (modalAcc) modalAcc.style.display = "none";
+      };
+    }
+    if (modalAcc) {
+      modalAcc.onclick = (e) => {
+        if (e.target === modalAcc) modalAcc.style.display = "none";
+      };
+    }
+
+    // ล็อกอิน LINE
+    document.getElementById("btnAccLoginLine").onclick = () => {
+      if (typeof liff !== "undefined") {
+        liff.login({ redirectUri: window.location.href });
+      } else {
+        alert("กำลังเชื่อมต่อระบบ LINE LIFF กรุณาลองใหม่อีกครั้ง");
+      }
+    };
+
+    // ล็อกอิน Google
+    document.getElementById("btnAccLoginGoogle").onclick = () => {
+      const gEmail = prompt(i18n.googlePrompt, "");
+      if (gEmail && gEmail.trim()) {
+        const cleanG = gEmail.trim();
+        myProfile.userId = "G_" + btoa(unescape(encodeURIComponent(cleanG))).replace(/=/g, "").slice(0, 10);
+        myProfile.name = cleanG.split("@")[0];
+        myProfile.avatar = "https://cdn-icons-png.flaticon.com/512/300/300221.png";
+        myProfile.provider = "google";
+
+        localStorage.setItem("SQUAD_UID", myProfile.userId);
+        localStorage.setItem("SQUAD_UNAME", myProfile.name);
+        localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar);
+        localStorage.setItem("SQUAD_AUTH_PROVIDER", "google");
+
+        updateDashboardUI();
+        if (modalAcc) modalAcc.style.display = "none";
+        alert(`✅ ${i18n.loggedAs} [${myProfile.name}]`);
+      }
+    };
+
+    // ออกจากระบบ (Logout)
+    document.getElementById("btnAccLogout").onclick = () => {
+      if (confirm(i18n.logoutConfirm)) {
+        localStorage.removeItem("SQUAD_UID");
+        localStorage.removeItem("SQUAD_UNAME");
+        localStorage.removeItem("SQUAD_UAVATAR");
+        localStorage.removeItem("SQUAD_AUTH_PROVIDER");
+
+        if (typeof liff !== "undefined" && liff.isLoggedIn()) {
+          liff.logout();
+        }
+
+        alert(i18n.logoutDone);
+        location.reload();
       }
     };
   </script>
