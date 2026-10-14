@@ -156,10 +156,19 @@
           document.getElementById("userName").textContent = myProfile.name;
           document.getElementById("userAvatar").src = myProfile.avatar;
         } else {
-          liff.login();
+          // ถ้าเปิดในบราวเซอร์นอกแล้วยังไม่ล็อกอิน ให้สร้าง ID ชั่วคราวแยกเฉพาะบราวเซอร์นั้น
+          if (!myProfile.userId) {
+            myProfile.userId = "WEB_" + Math.random().toString(36).substring(2, 9);
+            localStorage.setItem("SQUAD_UID", myProfile.userId);
+          }
+          document.getElementById("userName").textContent = myProfile.name;
         }
       } catch (e) {
         console.warn("LIFF Dashboard fallback:", e);
+        if (!myProfile.userId) {
+          myProfile.userId = "WEB_" + Math.random().toString(36).substring(2, 9);
+          localStorage.setItem("SQUAD_UID", myProfile.userId);
+        }
         document.getElementById("userName").textContent = myProfile.name;
       }
       renderProjects();
