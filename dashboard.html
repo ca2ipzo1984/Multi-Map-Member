@@ -1,286 +1,55 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🗂️ SQUAD DASHBOARD // รวมแผนที่แก๊ง</title>
-
-  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
-    body { background: #0b0f19; color: #fff; min-height: 100vh; padding: 16px; padding-bottom: 90px; }
-
-    /* หัวโปรไฟล์ */
-    .profile-card {
-      background: #1e293b; border: 1px solid #334155; border-radius: 16px;
-      padding: 16px; display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    }
-    .profile-info { display: flex; align-items: center; gap: 12px; }
-    .avatar-lg { width: 48px; height: 48px; border-radius: 50%; border: 2.5px solid #06c755; object-fit: cover; }
-    .profile-name { font-size: 1rem; font-weight: bold; }
-    .profile-sub { font-size: 0.75rem; color: #94a3b8; }
-
-    /* หัวข้อ */
-    .section-title {
-      font-size: 1.1rem; font-weight: bold; margin-bottom: 12px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-
-    /* รายการการ์ดโปรเจกต์ */
-    .project-grid { display: flex; flex-direction: column; gap: 12px; }
-    .project-card {
-      background: #1e293b; border: 1px solid #334155; border-radius: 14px;
-      padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
-      transition: all 0.2s ease;
-    }
-    .project-card:hover { border-color: #38bdf8; }
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .project-name { font-size: 1rem; font-weight: bold; color: #f8fafc; }
-    .room-badge {
-      background: #0f172a; border: 1px solid #38bdf8; color: #38bdf8;
-      font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: bold;
-    }
-    .card-meta { font-size: 0.72rem; color: #94a3b8; }
-
-    /* ปุ่มในแต่ละการ์ด */
-    .card-actions { display: flex; gap: 8px; margin-top: 4px; }
-    .btn-action {
-      flex: 1; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem;
-      font-weight: bold; border: none; cursor: pointer; text-align: center; text-decoration: none;
-      display: flex; align-items: center; justify-content: center; gap: 4px;
-    }
-    .btn-enter { background: #06c755; color: #fff; }
-    .btn-share { background: #2563eb; color: #fff; }
-    .btn-del { background: #334155; color: #ef4444; flex: 0 0 38px; font-size: 1rem; }
-
-    /* ปุ่มสร้างโปรเจกต์ยักษ์ด้านล่าง */
-    .bottom-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95);
-      border-top: 1px solid #334155; padding: 14px 16px; z-index: 1000;
-      backdrop-filter: blur(8px);
-    }
-    .btn-create-main {
-      width: 100%; background: linear-gradient(135deg, #06c755, #059669);
-      color: #fff; border: none; border-radius: 12px; padding: 14px;
-      font-size: 1rem; font-weight: bold; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      box-shadow: 0 4px 15px rgba(6,199,85,0.4);
-    }
-
-    /* กล่อง Modal สร้างห้อง */
-    #modalCreate {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000;
-      display: none; align-items: center; justify-content: center; padding: 20px;
-    }
-    .modal-box {
-      background: #1e293b; border: 1px solid #475569; border-radius: 16px;
-      width: 100%; max-width: 360px; padding: 20px; text-align: center;
-    }
-    .modal-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 12px; }
-    .modal-input {
-      width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px;
-      padding: 12px; color: #fff; font-size: 0.9rem; outline: none; margin-bottom: 16px;
-    }
-    .modal-buttons { display: flex; gap: 10px; }
-    .btn-modal { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
-    .btn-modal-cancel { background: #334155; color: #cbd5e1; }
-    .btn-modal-ok { background: #06c755; color: #fff; }
-  </style>
-</head>
-<body>
-
-  <!-- โปรไฟล์ผู้ใช้ -->
-  <div class="profile-card">
-    <div class="profile-info">
-      <img id="userAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar-lg" referrerpolicy="no-referrer">
-      <div>
-        <div class="profile-name" id="userName">กำลังเชื่อมต่อ LINE...</div>
-        <div class="profile-sub">ศูนย์บัญชาการแผนที่แก๊ง</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- หัวข้อรายการ -->
-  <div class="section-title">
-    <span>🗺️ แผนที่กลุ่มของคุณ</span>
-    <span style="font-size:0.8rem; color:#94a3b8;" id="projectCount">0 ห้อง</span>
-  </div>
-
-  <!-- รายการแผนที่ -->
-  <div class="project-grid" id="projectList">
-    <div style="text-align:center; color:#64748b; padding:40px 0;">
-      ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างโปรเจกต์ใหม่!
-    </div>
-  </div>
-
-  <!-- แถบล่าง: ปุ่มสร้างใหม่ -->
-  <div class="bottom-bar">
-    <button class="btn-create-main" id="btnOpenCreate">
-      <span>➕</span> สร้างแผนที่กลุ่มใหม่
-    </button>
-  </div>
-
-  <!-- Modal ป้อนชื่อห้อง -->
-  <div id="modalCreate">
-    <div class="modal-box">
-      <div class="modal-title">🚩 สร้างแผนที่กลุ่มใหม่</div>
-      <input type="text" class="modal-input" id="roomNameInput" placeholder="เช่น ทริปเขาใหญ่ 2026, ทีมไรเดอร์" maxlength="30">
-      <div class="modal-buttons">
-        <button class="btn-modal btn-modal-cancel" id="btnCancelModal">ยกเลิก</button>
-        <button class="btn-modal btn-modal-ok" id="btnConfirmCreate">สร้างห้องทันที</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const MY_LIFF_ID = "2012010620-7LrsLOGx";
-
-    let myProfile = {
-      userId: localStorage.getItem("SQUAD_UID") || "",
-      name: localStorage.getItem("SQUAD_UNAME") || "สหาย",
-      avatar: localStorage.getItem("SQUAD_UAVATAR") || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-    };
-
-    // เริ่มต้น LIFF
-    async function initDashboardLiff() {
-      try {
-        await liff.init({ liffId: MY_LIFF_ID });
-        if (liff.isLoggedIn()) {
-          const p = await liff.getProfile();
-          myProfile.userId = p.userId;
-          myProfile.name = p.displayName;
-          myProfile.avatar = p.pictureUrl || myProfile.avatar;
-
-          localStorage.setItem("SQUAD_UID", myProfile.userId);
-          localStorage.setItem("SQUAD_UNAME", myProfile.name);
-          localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar);
-
-          document.getElementById("userName").textContent = myProfile.name;
-          document.getElementById("userAvatar").src = myProfile.avatar;
-        } else {
-          liff.login();
-        }
-      } catch (e) {
-        console.warn("LIFF Dashboard fallback:", e);
-        document.getElementById("userName").textContent = myProfile.name;
-      }
-      renderProjects();
-    }
-    initDashboardLiff();
-
-    // ดึงโปรเจกต์ที่เคยสร้างไว้จาก LocalStorage
-    function getStoredProjects() {
-      return JSON.parse(localStorage.getItem("SQUAD_PROJECTS") || "[]");
-    }
-
-    function saveProjects(list) {
-      localStorage.setItem("SQUAD_PROJECTS", JSON.stringify(list));
-      renderProjects();
-    }
-
-    function renderProjects() {
-      const list = getStoredProjects();
-      const container = document.getElementById("projectList");
-      document.getElementById("projectCount").textContent = `${list.length} ห้อง`;
-
-      if (!list.length) {
-        container.innerHTML = `
-          <div style="text-align:center; color:#64748b; padding:40px 0;">
-            ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างห้องแรกได้เลย!
-          </div>`;
-        return;
-      }
-
-      container.innerHTML = "";
-      list.forEach((p, idx) => {
-        const shareLink = `https://liff.line.me/${MY_LIFF_ID}?room=${p.roomId}`;
-        const enterLink = `LiffMap.html?room=${p.roomId}`;
-
-        const card = document.createElement("div");
-        card.className = "project-card";
-        card.innerHTML = `
-          <div class="card-top">
-            <div class="project-name">${p.name}</div>
-            <div class="room-badge">${p.roomId}</div>
-          </div>
-          <div class="card-meta">📅 สร้างเมื่อ: ${p.createdAt} (โดย ${p.creator})</div>
-          <div class="card-actions">
-            <a href="${enterLink}" class="btn-action btn-enter">🗺️ เข้าแผนที่</a>
-            <button class="btn-action btn-share" onclick="shareProject('${p.name}', '${p.roomId}')">📤 แชร์เข้า LINE</button>
-            <button class="btn-action btn-del" onclick="deleteProject(${idx})" title="ลบห้องนี้">🗑️</button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    // เปิด/ปิด Modal สร้างห้อง
-    const modal = document.getElementById("modalCreate");
-    const nameInput = document.getElementById("roomNameInput");
-
-    document.getElementById("btnOpenCreate").onclick = () => {
-      modal.style.display = "flex";
-      nameInput.value = "";
-      nameInput.focus();
-    };
-    document.getElementById("btnCancelModal").onclick = () => {
-      modal.style.display = "none";
-    };
-
-    // ยืนยันการสร้างห้องใหม่
-    document.getElementById("btnConfirmCreate").onclick = () => {
-      const name = nameInput.value.trim();
-      if (!name) {
-        alert("กรุณาตั้งชื่อแผนที่กลุ่มก่อน!");
-        return;
-      }
-
-      // สุ่มรหัสห้องสั้นๆ จำง่าย (เช่น ROOM-4821)
-      const roomId = "ROOM-" + Math.floor(1000 + Math.random() * 9000);
-      const nowStr = new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
-
-      const newProj = {
-        roomId: roomId,
-        name: name,
-        creator: myProfile.name,
-        createdAt: nowStr
-      };
-
-      const currentList = getStoredProjects();
-      currentList.unshift(newProj);
-      saveProjects(currentList);
-
-      modal.style.display = "none";
-      alert(`✅ สร้างแผนที่ [${name}] สำเร็จ!\nรหัสห้อง: ${roomId}\nแชร์ลิงก์ให้เพื่อนได้ทันที!`);
-    };
-
-    // แชร์เข้า LINE
-    window.shareProject = (name, roomId) => {
-      const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${roomId}`;
-      if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
-        liff.shareTargetPicker([
-          {
-            type: "text",
-            text: `🗺️ แก๊งชวนเข้าแผนที่: [${name}]\nคลิกเข้าร่วมดูพิกัดสดและแชทกลุ่ม:\n${shareUrl}`
+window.shareProject = (name, roomId) => {
+  const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${roomId}`;
+  if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
+    liff.shareTargetPicker([
+      {
+        type: "flex",
+        altText: `📍 แผนที่สด: [${name}]`,
+        contents: {
+          type: "bubble",
+          size: "kilo",
+          header: {
+            type: "box",
+            layout: "horizontal",
+            backgroundColor: "#0f172a",
+            contents: [
+              { type: "text", text: "📍 อยู่ไหน (YooNhai)", weight: "bold", color: "#06c755", size: "sm" },
+              { type: "text", text: roomId, weight: "bold", color: "#38bdf8", size: "xxs", align: "end" }
+            ]
+          },
+          body: {
+            type: "box",
+            layout: "vertical",
+            backgroundColor: "#1e293b",
+            spacing: "md",
+            contents: [
+              { type: "text", text: name, weight: "bold", size: "lg", color: "#ffffff" },
+              { type: "text", text: "🗺️ ชวนเข้าดูพิกัดสดและตำแหน่งแก๊งแบบเรียลไทม์", size: "xs", color: "#94a3b8" }
+            ]
+          },
+          footer: {
+            type: "box",
+            layout: "vertical",
+            backgroundColor: "#0f172a",
+            contents: [
+              {
+                type: "button",
+                style: "primary",
+                color: "#06c755",
+                height: "sm",
+                action: {
+                  type: "uri",
+                  label: "🚗 เข้าดูแผนที่สด",
+                  uri: shareUrl // ลิงก์ถูกซ่อนอยู่ใต้ปุ่มนี้ 100% ไม่โชว์ URL รกแชต
+                }
+              }
+            ]
           }
-        ]);
-      } else {
-        // Fallback: ก๊อปปี้คลิปบอร์ด
-        navigator.clipboard.writeText(shareUrl);
-        alert(`คัดลอกลิงก์ห้อง [${name}] แล้ว! ส่งให้เพื่อนใน LINE ได้เลย:\n${shareUrl}`);
+        }
       }
-    };
-
-    window.deleteProject = (index) => {
-      if (confirm("ต้องการลบแผนที่ห้องนี้ออกจากรายการของคุณใช่หรือไม่?")) {
-        const list = getStoredProjects();
-        list.splice(index, 1);
-        saveProjects(list);
-      }
-    };
-  </script>
-</body>
-</html>
+    ]);
+  } else {
+    navigator.clipboard.writeText(shareUrl);
+    alert(`คัดลอกลิงก์ห้อง [${name}] เรียบร้อย!`);
+  }
+};
