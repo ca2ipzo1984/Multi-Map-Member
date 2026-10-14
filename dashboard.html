@@ -4,306 +4,129 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🗂️ U-Nhai // รวมแผนที่แก๊ง</title>
-
-  <!-- LINE LIFF SDK 2.x -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
-
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif; }
-    body { background: #0b0f19 !important; color: #fff !important; min-height: 100vh; padding: 16px; padding-bottom: 95px; }
-
-    .header-branding {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      margin-bottom: 18px; padding: 6px 0;
-    }
-    .brand-logo-badge {
-      display: flex; align-items: center; justify-content: center;
-      width: 40px; height: 40px; border-radius: 10px; border: 2px solid #06c755;
-      background: #0f172a; box-shadow: 0 0 15px rgba(6,199,85,0.7); flex-shrink: 0;
-    }
-    .brand-title-text { font-size: 1.3rem; font-weight: bold; color: #f8fafc; letter-spacing: 0.5px; }
-
-    .profile-card {
-      background: #1e293b; border: 1px solid #334155; border-radius: 16px;
-      padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      cursor: pointer; transition: border-color 0.2s ease;
-    }
-    .profile-card:hover { border-color: #38bdf8; }
-    .profile-info { display: flex; align-items: center; gap: 12px; }
-    .avatar-lg {
-      width: 48px !important; height: 48px !important; min-width: 48px !important; max-width: 48px !important;
-      border-radius: 50% !important; border: 2.5px solid #06c755 !important;
-      object-fit: cover !important; background: #0f172a; flex-shrink: 0 !important;
-    }
-    .profile-name { font-size: 1rem; font-weight: bold; color: #f8fafc; }
-    .profile-sub { font-size: 0.75rem; color: #94a3b8; }
-    .btn-profile-manage {
-      background: #0f172a; border: 1px solid #38bdf8; color: #38bdf8;
-      font-size: 0.72rem; padding: 4px 10px; border-radius: 10px; font-weight: bold;
-    }
-
-    .section-title {
-      font-size: 1.05rem; font-weight: bold; margin-bottom: 12px;
-      display: flex; justify-content: space-between; align-items: center; color: #cbd5e1;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
+    body { background: #0b0f19 !important; color: #fff !important; min-height: 100vh; padding: 16px 16px 95px 16px; margin: 0; }
+    .header-branding { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 18px; }
+    .brand-logo-badge { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; border: 2px solid #06c755; background: #0f172a; box-shadow: 0 0 15px rgba(6,199,85,0.7); flex-shrink: 0; }
+    .profile-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; cursor: pointer; }
+    .avatar-lg { width: 48px !important; height: 48px !important; min-width: 48px !important; max-width: 48px !important; border-radius: 50% !important; border: 2.5px solid #06c755 !important; object-fit: cover !important; background: #0f172a; flex-shrink: 0 !important; }
+    .section-title { font-size: 1.05rem; font-weight: bold; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; color: #cbd5e1; }
     .project-grid { display: flex; flex-direction: column; gap: 12px; }
-    .project-card {
-      background: #1e293b; border: 1px solid #334155; border-radius: 14px;
-      padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: border-color 0.2s ease;
-    }
-    .project-card:hover { border-color: #38bdf8; }
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .project-name { font-size: 1rem; font-weight: bold; color: #f8fafc; word-break: break-word; }
-    .room-badge {
-      background: #0f172a; border: 1px solid #38bdf8; color: #38bdf8;
-      font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; white-space: nowrap;
-    }
-    .card-meta { font-size: 0.75rem; color: #94a3b8; }
-
+    .project-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .room-badge { background: #0f172a; border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
     .card-actions { display: flex; gap: 8px; margin-top: 4px; }
-    .btn-action {
-      flex: 1; padding: 10px 12px; border-radius: 8px; font-size: 0.82rem;
-      font-weight: bold; border: none; cursor: pointer; text-align: center; text-decoration: none;
-      display: flex; align-items: center; justify-content: center; gap: 4px;
-    }
+    .btn-action { flex: 1; padding: 10px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: bold; border: none; cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
     .btn-enter { background: #06c755; color: #fff; }
     .btn-share { background: #2563eb; color: #fff; }
     .btn-del { background: #334155; color: #ef4444; flex: 0 0 40px; font-size: 1rem; }
-
-    .bottom-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.96);
-      border-top: 1px solid #334155; padding: 14px 16px; z-index: 1000;
-      backdrop-filter: blur(8px);
-    }
-    .btn-create-main {
-      width: 100%; background: linear-gradient(135deg, #06c755, #059669);
-      color: #fff; border: none; border-radius: 12px; padding: 14px;
-      font-size: 1rem; font-weight: bold; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      box-shadow: 0 4px 15px rgba(6,199,85,0.4);
-    }
-
-    #modalCreate {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
-      display: none; align-items: center; justify-content: center; padding: 20px;
-      backdrop-filter: blur(8px);
-    }
-    .modal-box {
-      background: #1e293b; border: 1px solid #475569; border-radius: 16px;
-      width: 100%; max-width: 360px; padding: 20px; text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    }
-    .modal-title { font-size: 1.15rem; font-weight: bold; margin-bottom: 12px; color: #fff; }
-    .modal-input {
-      width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px;
-      padding: 12px; color: #fff; font-size: 0.9rem; outline: none; margin-bottom: 16px;
-    }
-    .modal-buttons { display: flex; gap: 10px; }
-    .btn-modal { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; font-size: 0.9rem; }
-    .btn-modal-cancel { background: #334155; color: #cbd5e1; }
-    .btn-modal-ok { background: #06c755; color: #fff; }
-
-    #modalAccount {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000;
-      display: none; align-items: center; justify-content: center; padding: 20px;
-      backdrop-filter: blur(8px);
-    }
-    .account-card {
-      background: #1e293b; border: 1px solid #475569; border-radius: 20px;
-      width: 100%; max-width: 340px; padding: 24px; text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    }
-    .acc-avatar {
-      width: 72px; height: 72px; border-radius: 50%; border: 3px solid #06c755;
-      margin: 0 auto 12px; object-fit: cover; box-shadow: 0 0 15px rgba(6,199,85,0.6);
-      background: #0f172a;
-    }
-    .acc-name { font-size: 1.15rem; font-weight: bold; color: #fff; margin-bottom: 4px; }
-    .acc-id { font-size: 0.75rem; color: #94a3b8; margin-bottom: 20px; word-break: break-all; }
-    .btn-acc {
-      width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.9rem;
-      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      gap: 10px; margin-bottom: 10px; text-decoration: none;
-    }
-    .btn-acc-line { background: #06c755; color: #fff; }
-    .btn-acc-google { background: #fff; color: #1f2937; }
-    .btn-acc-logout { background: #ef4444; color: #fff; margin-top: 8px; }
-    .btn-acc-close { background: #334155; color: #cbd5e1; }
+    .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15,23,42,0.96); border-top: 1px solid #334155; padding: 14px 16px; z-index: 1000; }
+    .btn-create-main { width: 100%; background: linear-gradient(135deg, #06c755, #059669); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    #modalCreate, #modalAccount { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-box { background: #1e293b; border: 1px solid #475569; border-radius: 16px; width: 100%; max-width: 360px; padding: 20px; text-align: center; }
+    .modal-input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; color: #fff; outline: none; margin-bottom: 16px; font-size: 0.9rem; }
+    .btn-modal { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
+    .btn-acc { width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
   </style>
 </head>
 <body style="background:#0b0f19; color:#fff; min-height:100vh; padding:16px 16px 95px 16px; margin:0;">
-
-  <!-- แบรนด์ดิ้งโลโก้หัวหน้าเว็บแบบ SVG คมกริบ ไม่แตก ไม่เสียรูป -->
   <div class="header-branding" style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:18px;">
-    <div class="brand-logo-badge" style="display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:10px; border:2px solid #06c755; background:#0f172a; box-shadow:0 0 15px rgba(6,199,85,0.7); flex-shrink:0;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#06c755" stroke="#ffffff" stroke-width="1.5"/>
-        <circle cx="12" cy="9" r="3" fill="#ffffff"/>
-      </svg>
+    <div class="brand-logo-badge" style="display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:10px; border:2px solid #06c755; background:#0f172a; flex-shrink:0;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#06c755" stroke="#ffffff" stroke-width="1.5"/><circle cx="12" cy="9" r="3" fill="#ffffff"/></svg>
     </div>
-    <div class="brand-title-text" style="font-size:1.3rem; font-weight:bold; color:#f8fafc;">📍 U-Nhai</div>
+    <div style="font-size:1.3rem; font-weight:bold; color:#f8fafc;">📍 U-Nhai</div>
   </div>
 
-  <!-- การ์ดโปรไฟล์ส่วนหัว (กดเพื่อจัดการบัญชี/ล็อกอิน/ล็อกเอาท์) -->
-  <div class="profile-card" id="btnProfileCard" style="background:#1e293b; border:1px solid #334155; border-radius:16px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.4); cursor:pointer;">
-    <div class="profile-info" style="display:flex; align-items:center; gap:12px;">
-      <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" style="width:48px !important; height:48px !important; min-width:48px !important; max-width:48px !important; border-radius:50% !important; border:2.5px solid #06c755 !important; object-fit:cover !important; flex-shrink:0 !important; background:#0f172a;" class="avatar-lg" referrerpolicy="no-referrer">
+  <div class="profile-card" id="btnProfileCard" style="background:#1e293b; border:1px solid #334155; border-radius:16px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; cursor:pointer;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" style="width:48px !important; height:48px !important; min-width:48px !important; max-width:48px !important; border-radius:50% !important; border:2.5px solid #06c755 !important; object-fit:cover !important; flex-shrink:0 !important; background:#0f172a;" class="avatar-lg">
       <div>
-        <div class="profile-name" id="userName" style="font-size:1rem; font-weight:bold; color:#f8fafc;">กำลังเชื่อมต่อ LINE...</div>
-        <div class="profile-sub" id="userSub" style="font-size:0.75rem; color:#94a3b8;">ศูนย์บัญชาการแผนที่แก๊งสด</div>
+        <div id="userName" style="font-size:1rem; font-weight:bold; color:#f8fafc;">กำลังเชื่อมต่อ LINE...</div>
+        <div style="font-size:0.75rem; color:#94a3b8;">ศูนย์บัญชาการแผนที่แก๊งสด</div>
       </div>
     </div>
-    <div class="btn-profile-manage" id="btnProfileManageText" style="background:#0f172a; border:1px solid #38bdf8; color:#38bdf8; font-size:0.72rem; padding:4px 10px; border-radius:10px; font-weight:bold;">บัญชี ⚙️</div>
+    <div style="background:#0f172a; border:1px solid #38bdf8; color:#38bdf8; font-size:0.72rem; padding:4px 10px; border-radius:10px; font-weight:bold;">บัญชี ⚙️</div>
   </div>
 
   <div class="section-title" style="font-size:1.05rem; font-weight:bold; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; color:#cbd5e1;">
-    <span id="sectionTitleText">🗺️ รายการแผนที่ของฉัน</span>
+    <span>🗺️ รายการแผนที่ของฉัน</span>
     <span id="projectCount" class="room-badge" style="background:#0f172a; border:1px solid #38bdf8; color:#38bdf8; font-size:0.68rem; padding:2px 8px; border-radius:10px; font-weight:bold;">0 ห้อง</span>
   </div>
 
   <div class="project-grid" id="projectList" style="display:flex; flex-direction:column; gap:12px;">
-    <div style="text-align:center; color:#64748b; padding:40px 0;">
-      ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างโปรเจกต์ใหม่!
-    </div>
+    <div style="text-align:center; color:#64748b; padding:40px 0;">ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างห้องใหม่!</div>
   </div>
 
   <div class="bottom-bar" style="position:fixed; bottom:0; left:0; right:0; background:rgba(15,23,42,0.96); border-top:1px solid #334155; padding:14px 16px; z-index:1000;">
     <button class="btn-create-main" id="btnOpenCreate" style="width:100%; background:linear-gradient(135deg, #06c755, #059669); color:#fff; border:none; border-radius:12px; padding:14px; font-size:1rem; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-      <span>➕</span> <span id="btnCreateText">สร้างแผนที่กลุ่มใหม่</span>
+      <span>➕</span> <span>สร้างแผนที่กลุ่มใหม่</span>
     </button>
   </div>
 
-  <!-- Modal สร้างห้องใหม่ (ล็อก display:none แบบ Inline) -->
   <div id="modalCreate" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; padding:20px;">
     <div class="modal-box" style="background:#1e293b; border:1px solid #475569; border-radius:16px; width:100%; max-width:360px; padding:20px; text-align:center;">
-      <div class="modal-title" id="modalCreateTitle" style="font-size:1.15rem; font-weight:bold; margin-bottom:12px; color:#fff;">🚩 สร้างแผนที่กลุ่มใหม่</div>
-      <input type="text" class="modal-input" id="roomNameInput" placeholder="เช่น ทริปเขาใหญ่ 2026, ทีมไรเดอร์" maxlength="30" style="width:100%; background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px; color:#fff; font-size:0.9rem; outline:none; margin-bottom:16px;">
-      <div class="modal-buttons" style="display:flex; gap:10px;">
-        <button class="btn-modal btn-modal-cancel" id="btnCancelModal" style="flex:1; padding:10px; border-radius:8px; font-weight:bold; border:none; cursor:pointer; background:#334155; color:#cbd5e1;">ยกเลิก</button>
-        <button class="btn-modal btn-modal-ok" id="btnConfirmCreate" style="flex:1; padding:10px; border-radius:8px; font-weight:bold; border:none; cursor:pointer; background:#06c755; color:#fff;">สร้างห้องทันที</button>
+      <div style="font-size:1.15rem; font-weight:bold; margin-bottom:12px; color:#fff;">🚩 สร้างแผนที่กลุ่มใหม่</div>
+      <input type="text" class="modal-input" id="roomNameInput" placeholder="เช่น ทริปเขาใหญ่ 2026, ทีมไรเดอร์" maxlength="30" style="width:100%; background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px; color:#fff; outline:none; margin-bottom:16px;">
+      <div style="display:flex; gap:10px;">
+        <button class="btn-modal" id="btnCancelModal" style="flex:1; padding:10px; border-radius:8px; font-weight:bold; background:#334155; color:#cbd5e1;">ยกเลิก</button>
+        <button class="btn-modal" id="btnConfirmCreate" style="flex:1; padding:10px; border-radius:8px; font-weight:bold; background:#06c755; color:#fff;">สร้างห้องทันที</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal บัญชีผู้ใช้ (ล็อก display:none แบบ Inline) -->
   <div id="modalAccount" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; padding:20px;">
-    <div class="account-card">
-      <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="acc-avatar" referrerpolicy="no-referrer">
-      <div class="acc-name" id="accModalName">สหาย</div>
-      <div class="acc-id" id="accModalId">สถานะ: บัญชีชั่วคราว</div>
-
+    <div style="background:#1e293b; border:1px solid #475569; border-radius:20px; width:100%; max-width:340px; padding:24px; text-align:center;">
+      <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" style="width:72px; height:72px; border-radius:50%; border:3px solid #06c755; margin:0 auto 12px; object-fit:cover; background:#0f172a;">
+      <div id="accModalName" style="font-size:1.15rem; font-weight:bold; color:#fff; margin-bottom:4px;">สหาย</div>
+      <div id="accModalId" style="font-size:0.75rem; color:#94a3b8; margin-bottom:20px;">สถานะ: บัญชีชั่วคราว</div>
       <div id="accLoginActions">
-        <button class="btn-acc btn-acc-line" id="btnAccLoginLine">
-          <span>💬</span> เข้าสู่ระบบด้วย LINE
-        </button>
-        <button class="btn-acc btn-acc-google" id="btnAccLoginGoogle">
-          <span>🌐</span> เข้าสู่ระบบด้วย Google
-        </button>
+        <button class="btn-acc" id="btnAccLoginLine" style="background:#06c755; color:#fff;"><span>💬</span> เข้าสู่ระบบด้วย LINE</button>
+        <button class="btn-acc" id="btnAccLoginGoogle" style="background:#fff; color:#1f2937;"><span>🌐</span> เข้าสู่ระบบด้วย Google</button>
       </div>
-
-      <button class="btn-acc btn-acc-logout" id="btnAccLogout">🚪 ออกจากระบบ (Log out)</button>
-      <button class="btn-acc btn-acc-close" id="btnAccCloseModal">ปิดหน้าต่าง</button>
+      <button class="btn-acc" id="btnAccLogout" style="background:#ef4444; color:#fff; margin-top:8px;">🚪 ออกจากระบบ (Log out)</button>
+      <button class="btn-acc" id="btnAccCloseModal" style="background:#334155; color:#cbd5e1;">ปิดหน้าต่าง</button>
     </div>
   </div>
 
   <script>
     const MY_LIFF_ID = "2012010620-7LrsLOGx";
-    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
     const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
-
-    const deviceLang = (navigator.language || navigator.userLanguage || "th").toLowerCase();
-    const isThai = deviceLang.startsWith("th");
-
-    const i18n = {
-      title: isThai ? "🗂️ U-Nhai // รวมแผนที่แก๊ง" : "🗂️ U-Nhai // Squad Maps",
-      hqSub: isThai ? "ศูนย์บัญชาการแผนที่แก๊งสด" : "Squad Live GPS Command Hub",
-      connecting: isThai ? "กำลังเชื่อมต่อ LINE..." : "Connecting to LINE...",
-      sectionTitle: isThai ? "🗺️ รายการแผนที่ของฉัน" : "🗺️ My Squad Maps",
-      noProjects: isThai ? "ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างโปรเจกต์ใหม่!" : "No squad maps yet<br>Tap green button below to create your first room!",
-      btnCreate: isThai ? "สร้างแผนที่กลุ่มใหม่" : "Create New Squad Map",
-      modalTitle: isThai ? "🚩 สร้างแผนที่กลุ่มใหม่" : "🚩 Create New Squad Map",
-      modalPlaceholder: isThai ? "เช่น ทริปเขาใหญ่ 2026, ทีมไรเดอร์" : "e.g. Roadtrip 2026, Delivery Squad",
-      modalCancel: isThai ? "ยกเลิก" : "Cancel",
-      modalOk: isThai ? "สร้างห้องทันที" : "Create Now",
-      createdLabel: isThai ? "สร้างเมื่อ:" : "Created:",
-      byLabel: isThai ? "โดย" : "by",
-      btnEnter: isThai ? "🗺️ เข้าแผนที่" : "🗺️ Open Map",
-      btnShare: isThai ? "📤 แชร์เข้า LINE" : "📤 Share to LINE",
-      confirmDel: isThai ? "ต้องการลบแผนที่ห้องนี้ออกจากรายการของคุณใช่หรือไม่?" : "Do you want to delete this room from your list?",
-      pleaseName: isThai ? "กรุณาตั้งชื่อแผนที่กลุ่มก่อน!" : "Please enter a squad map name!",
-      createSuccess: isThai ? "สร้างแผนที่" : "Squad Map",
-      done: isThai ? "สำเร็จ!" : "Created successfully!",
-      roomCode: isThai ? "รหัสห้อง:" : "Room Code:",
-      copied: isThai ? "คัดลอกลิงก์ห้องเรียบร้อย!\n" : "Room link copied!\n",
-      defaultUser: isThai ? "สหาย" : "Friend",
-      accTemp: isThai ? "⚠️ บัญชีชั่วคราว (กดล็อกอินด้านล่าง)" : "⚠️ Temporary Account (Log in below)",
-      accLogged: isThai ? "● บัญชี:" : "● Account:",
-      loginLine: isThai ? "เข้าสู่ระบบด้วย LINE" : "Log in with LINE",
-      loginGoogle: isThai ? "เข้าสู่ระบบด้วย Google" : "Log in with Google",
-      logoutBtn: isThai ? "🚪 ออกจากระบบ (Log out)" : "🚪 Log out",
-      closeBtn: isThai ? "ปิดหน้าต่าง" : "Close",
-      logoutConfirm: isThai ? "ต้องการออกจากระบบ (Log out) ใช่หรือไม่?\nข้อมูลเซสชันจะถูกรีเซ็ต" : "Do you want to log out?\nYour session will be reset.",
-      logoutDone: isThai ? "ออกจากระบบเรียบร้อย" : "Logged out successfully",
-      googlePrompt: isThai ? "กรอกชื่อหรืออีเมล Google สำหรับแสดงตัวตนในแผนที่:" : "Enter your name or Google email for identity on map:",
-      loggedAs: isThai ? "เข้าสู่ระบบในชื่อ" : "Logged in as"
-    };
-
-    document.title = i18n.title;
-    const userSubEl = document.getElementById("userSub");
-    if (userSubEl) userSubEl.textContent = i18n.hqSub;
-    const secTitleEl = document.getElementById("sectionTitleText");
-    if (secTitleEl) secTitleEl.textContent = i18n.sectionTitle;
 
     let myProfile = {
       userId: localStorage.getItem("SQUAD_UID") || ("U_" + Date.now().toString().slice(-6)),
-      name: localStorage.getItem("SQUAD_UNAME") || i18n.defaultUser,
+      name: localStorage.getItem("SQUAD_UNAME") || "สหาย",
       avatar: localStorage.getItem("SQUAD_UAVATAR") || DEFAULT_AVATAR,
       provider: localStorage.getItem("SQUAD_AUTH_PROVIDER") || ""
     };
     localStorage.setItem("SQUAD_UID", myProfile.userId);
 
     function updateDashboardUI() {
-      const nameEl = document.getElementById("userName");
-      if (nameEl) nameEl.textContent = myProfile.name;
-      const avatarEl = document.getElementById("userAvatar");
-      if (avatarEl) avatarEl.src = myProfile.avatar;
-
-      const accAvatar = document.getElementById("accModalAvatar");
-      if (accAvatar) accAvatar.src = myProfile.avatar;
-      const accName = document.getElementById("accModalName");
-      if (accName) accName.textContent = myProfile.name;
+      document.getElementById("userName").textContent = myProfile.name;
+      document.getElementById("userAvatar").src = myProfile.avatar;
+      document.getElementById("accModalAvatar").src = myProfile.avatar;
+      document.getElementById("accModalName").textContent = myProfile.name;
 
       const accIdEl = document.getElementById("accModalId");
       const loginActions = document.getElementById("accLoginActions");
       const btnLogout = document.getElementById("btnAccLogout");
 
       if (myProfile.provider) {
-        if (accIdEl) accIdEl.innerHTML = `<span style="color:#06c755; font-weight:bold;">● ${i18n.accLogged} ${myProfile.provider === "line" ? "LINE" : "Google"} (${myProfile.userId.slice(-6)})</span>`;
-        if (loginActions) loginActions.style.display = "none";
-        if (btnLogout) btnLogout.style.display = "block";
+        accIdEl.innerHTML = `<span style="color:#06c755; font-weight:bold;">● บัญชี: ${myProfile.provider === "line" ? "LINE" : "Google"} (${myProfile.userId.slice(-6)})</span>`;
+        loginActions.style.display = "none";
+        btnLogout.style.display = "block";
       } else {
-        if (accIdEl) accIdEl.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">${i18n.accTemp}</span>`;
-        if (loginActions) loginActions.style.display = "block";
-        if (btnLogout) btnLogout.style.display = "none";
+        accIdEl.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">⚠️ บัญชีชั่วคราว (กดล็อกอินด้านล่าง)</span>`;
+        loginActions.style.display = "block";
+        btnLogout.style.display = "none";
       }
     }
     updateDashboardUI();
 
     async function initDashboardLiff() {
       try {
-        if (typeof liff === "undefined") {
-          console.warn("LIFF SDK not found");
-          updateDashboardUI();
-          renderProjects();
-          return;
-        }
-
+        if (typeof liff === "undefined") { renderProjects(); return; }
         await liff.init({ liffId: MY_LIFF_ID });
         if (liff.isLoggedIn()) {
           try {
@@ -312,242 +135,97 @@
             myProfile.name = p.displayName || myProfile.name;
             myProfile.avatar = p.pictureUrl || myProfile.avatar;
             myProfile.provider = "line";
-          } catch (pe) {
-            const idToken = liff.getDecodedIDToken();
-            if (idToken) {
-              myProfile.userId = idToken.sub || myProfile.userId;
-              myProfile.name = idToken.name || myProfile.name;
-              myProfile.avatar = idToken.picture || myProfile.avatar;
-              myProfile.provider = "line";
-            }
-          }
-
+          } catch(e) {}
           localStorage.setItem("SQUAD_UID", myProfile.userId);
           localStorage.setItem("SQUAD_UNAME", myProfile.name);
           localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar);
           localStorage.setItem("SQUAD_AUTH_PROVIDER", "line");
         } else {
-          if (liff.isInClient()) {
-            liff.login();
-            return;
-          }
+          if (liff.isInClient()) { liff.login(); return; }
         }
-      } catch (e) {
-        console.warn("LIFF Dashboard fallback:", e);
-      }
+      } catch(e) {}
       updateDashboardUI();
       renderProjects();
     }
     initDashboardLiff();
 
-    function getStoredProjects() {
-      return JSON.parse(localStorage.getItem("SQUAD_PROJECTS") || "[]");
-    }
-
-    function saveProjects(list) {
-      localStorage.setItem("SQUAD_PROJECTS", JSON.stringify(list));
-      renderProjects();
-    }
+    function getStoredProjects() { return JSON.parse(localStorage.getItem("SQUAD_PROJECTS") || "[]"); }
+    function saveProjects(list) { localStorage.setItem("SQUAD_PROJECTS", JSON.stringify(list)); renderProjects(); }
 
     function renderProjects() {
       const list = getStoredProjects();
       const container = document.getElementById("projectList");
-      const countEl = document.getElementById("projectCount");
-      if (countEl) countEl.textContent = `${list.length} ${isThai ? "ห้อง" : "Rooms"}`;
-
-      if (!container) return;
-
+      document.getElementById("projectCount").textContent = `${list.length} ห้อง`;
       if (!list.length) {
-        container.innerHTML = `
-          <div style="text-align:center; color:#64748b; padding:40px 0;">
-            ${i18n.noProjects}
-          </div>`;
+        container.innerHTML = `<div style="text-align:center; color:#64748b; padding:40px 0;">ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างห้องใหม่!</div>`;
         return;
       }
-
       container.innerHTML = "";
       list.forEach((p, idx) => {
         const enterLink = `LiffMap.html?room=${encodeURIComponent(p.roomId)}`;
-
         const card = document.createElement("div");
         card.className = "project-card";
-        card.innerHTML = `
-          <div class="card-top">
-            <div class="project-name">${p.name}</div>
-            <div class="room-badge">${p.roomId}</div>
-          </div>
-          <div class="card-meta">📅 ${i18n.createdLabel} ${p.createdAt} (${i18n.byLabel} ${p.creator})</div>
-          <div class="card-actions">
-            <a href="${enterLink}" class="btn-action btn-enter">${i18n.btnEnter}</a>
-            <button class="btn-action btn-share" onclick="shareProject('${p.name}', '${p.roomId}')">${i18n.btnShare}</button>
-            <button class="btn-action btn-del" onclick="deleteProject(${idx})" title="ลบห้องนี้">🗑️</button>
-          </div>
-        `;
+        card.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;"><div style="font-size:1rem; font-weight:bold; color:#f8fafc;">${p.name}</div><div class="room-badge">${p.roomId}</div></div><div style="font-size:0.75rem; color:#94a3b8;">📅 สร้างเมื่อ: ${p.createdAt} (โดย ${p.creator})</div><div class="card-actions"><a href="${enterLink}" class="btn-action btn-enter">🗺️ เข้าแผนที่</a><button class="btn-action btn-share" onclick="shareProject('${p.name}', '${p.roomId}')">📤 แชร์เข้า LINE</button><button class="btn-action btn-del" onclick="deleteProject(${idx})">🗑️</button></div>`;
         container.appendChild(card);
       });
     }
 
     const modal = document.getElementById("modalCreate");
     const nameInput = document.getElementById("roomNameInput");
-
-    document.getElementById("btnOpenCreate").onclick = () => {
-      modal.style.display = "flex";
-      nameInput.value = "";
-      nameInput.focus();
-    };
-    document.getElementById("btnCancelModal").onclick = () => {
-      modal.style.display = "none";
-    };
+    document.getElementById("btnOpenCreate").onclick = () => { modal.style.display = "flex"; nameInput.value = ""; nameInput.focus(); };
+    document.getElementById("btnCancelModal").onclick = () => { modal.style.display = "none"; };
 
     document.getElementById("btnConfirmCreate").onclick = () => {
-      const name = nameInput.value.trim();
-      if (!name) {
-        alert(i18n.pleaseName);
-        return;
-      }
-
+      const name = nameInput.value.trim(); if (!name) { alert("กรุณาตั้งชื่อห้อง"); return; }
       const roomId = "ROOM-" + Math.floor(1000 + Math.random() * 9000);
-      const nowStr = new Date().toLocaleDateString(isThai ? "th-TH" : "en-US", { day: "numeric", month: "short", year: "2-digit" });
-
-      const newProj = {
-        roomId: roomId,
-        name: name,
-        creator: myProfile.name,
-        createdAt: nowStr
-      };
-
+      const nowStr = new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" });
       const currentList = getStoredProjects();
-      currentList.unshift(newProj);
+      currentList.unshift({ roomId: roomId, name: name, creator: myProfile.name, createdAt: nowStr });
       saveProjects(currentList);
-
       modal.style.display = "none";
-      alert(`✅ ${i18n.createSuccess} [${name}] ${i18n.done}\n${i18n.roomCode} ${roomId}`);
+      alert(`✅ สร้างแผนที่ [${name}] สำเร็จ!\nรหัสห้อง: ${roomId}`);
     };
 
     window.shareProject = (name, roomId) => {
       const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${roomId}`;
-      if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable("shareTargetPicker")) {
-        liff.shareTargetPicker([
-          {
-            type: "flex",
-            altText: `📍 แผนที่สด: [${name}]`,
-            contents: {
-              type: "bubble",
-              size: "kilo",
-              header: {
-                type: "box",
-                layout: "horizontal",
-                backgroundColor: "#0f172a",
-                contents: [
-                  { type: "text", text: "📍 U-Nhai", weight: "bold", color: "#06c755", size: "sm" },
-                  { type: "text", text: roomId, weight: "bold", color: "#38bdf8", size: "xxs", align: "end" }
-                ]
-              },
-              body: {
-                type: "box",
-                layout: "vertical",
-                backgroundColor: "#1e293b",
-                spacing: "md",
-                contents: [
-                  { type: "text", text: name, weight: "bold", size: "lg", color: "#ffffff" },
-                  { type: "text", text: "🗺️ ชวนเข้าดูพิกัดสดและตำแหน่งแก๊งแบบเรียลไทม์", size: "xs", color: "#94a3b8" }
-                ]
-              },
-              footer: {
-                type: "box",
-                layout: "vertical",
-                backgroundColor: "#0f172a",
-                contents: [
-                  {
-                    type: "button",
-                    style: "primary",
-                    color: "#06c755",
-                    height: "sm",
-                    action: {
-                      type: "uri",
-                      label: "🚗 เข้าดูแผนที่สด",
-                      uri: shareUrl
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        ]);
-      } else {
-        navigator.clipboard.writeText(shareUrl);
-        alert(i18n.copied + shareUrl);
-      }
+      navigator.clipboard.writeText(shareUrl);
+      alert("คัดลอกลิงก์ห้องเรียบร้อย:\n" + shareUrl);
     };
 
     window.deleteProject = (index) => {
-      if (confirm(i18n.confirmDel)) {
-        const list = getStoredProjects();
-        list.splice(index, 1);
-        saveProjects(list);
+      if (confirm("ต้องการลบห้องนี้ใช่หรือไม่?")) {
+        const list = getStoredProjects(); list.splice(index, 1); saveProjects(list);
       }
     };
 
     const modalAcc = document.getElementById("modalAccount");
-    const btnProfileCard = document.getElementById("btnProfileCard");
-    if (btnProfileCard) {
-      btnProfileCard.onclick = () => {
-        updateDashboardUI();
-        if (modalAcc) modalAcc.style.display = "flex";
-      };
-    }
-    const btnAccClose = document.getElementById("btnAccCloseModal");
-    if (btnAccClose) {
-      btnAccClose.onclick = () => {
-        if (modalAcc) modalAcc.style.display = "none";
-      };
-    }
-    if (modalAcc) {
-      modalAcc.onclick = (e) => {
-        if (e.target === modalAcc) modalAcc.style.display = "none";
-      };
-    }
+    document.getElementById("btnProfileCard").onclick = () => { updateDashboardUI(); modalAcc.style.display = "flex"; };
+    document.getElementById("btnAccCloseModal").onclick = () => { modalAcc.style.display = "none"; };
+    modalAcc.onclick = (e) => { if (e.target === modalAcc) modalAcc.style.display = "none"; };
 
     document.getElementById("btnAccLoginLine").onclick = () => {
-      if (typeof liff !== "undefined") {
-        liff.login({ redirectUri: window.location.href });
-      } else {
-        alert("กำลังเชื่อมต่อระบบ LINE LIFF กรุณาลองใหม่อีกครั้ง");
-      }
+      if (typeof liff !== "undefined") liff.login({ redirectUri: window.location.href });
+      else alert("กำลังเชื่อมต่อ LINE...");
     };
 
     document.getElementById("btnAccLoginGoogle").onclick = () => {
-      const gEmail = prompt(i18n.googlePrompt, "");
+      const gEmail = prompt("กรอกชื่อหรืออีเมลสำหรับแสดงตัวตน:", "");
       if (gEmail && gEmail.trim()) {
         const cleanG = gEmail.trim();
         myProfile.userId = "G_" + btoa(unescape(encodeURIComponent(cleanG))).replace(/=/g, "").slice(0, 10);
         myProfile.name = cleanG.split("@")[0];
         myProfile.avatar = "https://cdn-icons-png.flaticon.com/512/300/300221.png";
         myProfile.provider = "google";
-
-        localStorage.setItem("SQUAD_UID", myProfile.userId);
-        localStorage.setItem("SQUAD_UNAME", myProfile.name);
-        localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar);
-        localStorage.setItem("SQUAD_AUTH_PROVIDER", "google");
-
-        updateDashboardUI();
-        if (modalAcc) modalAcc.style.display = "none";
-        alert(`✅ ${i18n.loggedAs} [${myProfile.name}]`);
+        localStorage.setItem("SQUAD_UID", myProfile.userId); localStorage.setItem("SQUAD_UNAME", myProfile.name);
+        localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar); localStorage.setItem("SQUAD_AUTH_PROVIDER", "google");
+        updateDashboardUI(); modalAcc.style.display = "none";
       }
     };
 
     document.getElementById("btnAccLogout").onclick = () => {
-      if (confirm(i18n.logoutConfirm)) {
-        localStorage.removeItem("SQUAD_UID");
-        localStorage.removeItem("SQUAD_UNAME");
-        localStorage.removeItem("SQUAD_UAVATAR");
-        localStorage.removeItem("SQUAD_AUTH_PROVIDER");
-
-        if (typeof liff !== "undefined" && liff.isLoggedIn()) {
-          liff.logout();
-        }
-
-        alert(i18n.logoutDone);
+      if (confirm("ต้องการออกจากระบบ (Log out) ใช่หรือไม่?")) {
+        localStorage.removeItem("SQUAD_UID"); localStorage.removeItem("SQUAD_UNAME"); localStorage.removeItem("SQUAD_UAVATAR"); localStorage.removeItem("SQUAD_AUTH_PROVIDER");
+        if (typeof liff !== "undefined" && liff.isLoggedIn()) liff.logout();
         location.reload();
       }
     };
