@@ -4,204 +4,60 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>📍 U-Nhai // แผนที่แก๊งสด</title>
-
-  <!-- LINE LIFF SDK 2.x -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
-  <!-- Leaflet Map CSS & JS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-  
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
-
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0f19; color: #fff; }
-    #map { width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1; background: #e5e3df; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
+    body, html { width: 100vw; height: 100vh; overflow: hidden; background: #0b0f19; color: #fff; }
+    #map { width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; z-index: 1; background: #0b0f19; }
     .leaflet-control-attribution { display: none !important; }
-
-    .top-bar {
-      position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1000;
-      background: rgba(15, 23, 42, 0.94); border: 1px solid #334155;
-      padding: 8px 12px; border-radius: 12px; backdrop-filter: blur(8px);
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    }
+    .top-bar { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1000; background: rgba(15,23,42,0.94); border: 1px solid #334155; padding: 8px 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
     .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer; }
-    .btn-back-dash { text-decoration: none; color: #38bdf8; font-size: 1.1rem; padding: 2px 6px; display: flex; align-items: center; border-radius: 6px; }
-    .btn-back-dash:hover { background: rgba(56,189,248,0.2); }
-    
-    .app-logo-badge {
-      display: flex; align-items: center; justify-content: center;
-      width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #06c755;
-      background: #0f172a; box-shadow: 0 0 10px rgba(6,199,85,0.7); flex-shrink: 0;
-    }
-    .user-avatar-mini {
-      width: 30px; height: 30px; border-radius: 50%; border: 2px solid #38bdf8;
-      object-fit: cover; background: #1e293b; flex-shrink: 0;
-    }
-    .room-badge-pill {
-      background: #1e293b; border: 1px solid #38bdf8; color: #38bdf8;
-      font-size: 0.65rem; padding: 2px 6px; border-radius: 8px; font-weight: bold;
-    }
-
+    .btn-back-dash { text-decoration: none; color: #38bdf8; font-size: 1.1rem; padding: 2px 6px; }
+    .app-logo-badge { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #06c755; background: #0f172a; flex-shrink: 0; }
+    .user-avatar-mini { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #38bdf8; object-fit: cover; flex-shrink: 0; }
+    .room-badge-pill { background: #1e293b; border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.65rem; padding: 2px 6px; border-radius: 8px; font-weight: bold; }
     .fab-group { position: absolute; right: 12px; top: 65px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
-    .btn-fab {
-      width: 44px; height: 44px; border-radius: 50%; border: 1px solid #475569;
-      background: #1e293b; color: #fff; font-size: 1.2rem; cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-      position: relative; transition: transform 0.15s ease, background 0.15s ease;
-    }
-    .btn-fab:active { transform: scale(0.92); }
+    .btn-fab { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #475569; background: #1e293b; color: #fff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     .btn-fab.active { background: #06c755; border-color: #fff; }
-
-    .chat-badge {
-      position: absolute; top: -2px; right: -2px; background: #ef4444; color: #fff;
-      font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; display: none;
-    }
-
-    #searchTargetBox {
-      position: absolute; top: 65px; left: 10px; right: 65px; z-index: 1000;
-      background: rgba(15, 23, 42, 0.96); border: 1.5px solid #ef4444;
-      border-radius: 14px; padding: 10px; display: none; flex-direction: column; gap: 8px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-    }
+    .chat-badge { position: absolute; top: -2px; right: -2px; background: #ef4444; color: #fff; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; display: none; }
+    #searchTargetBox { position: absolute; top: 65px; left: 10px; right: 65px; z-index: 1000; background: rgba(15,23,42,0.96); border: 1.5px solid #ef4444; border-radius: 14px; padding: 10px; display: none; flex-direction: column; gap: 8px; }
     .search-input-group { display: flex; gap: 6px; }
-    .search-target-input {
-      flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px;
-      padding: 8px 12px; color: #fff; font-size: 0.85rem; outline: none;
-    }
-    .btn-search-go {
-      background: #ef4444; color: #fff; border: none; border-radius: 8px;
-      padding: 8px 14px; font-weight: bold; font-size: 0.8rem; cursor: pointer;
-    }
-    .btn-search-close {
-      background: #334155; color: #cbd5e1; border: none; border-radius: 8px;
-      padding: 8px 10px; cursor: pointer; font-size: 0.85rem;
-    }
-    .search-results-list {
-      max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
-    }
-    .search-result-item {
-      background: #1e293b; padding: 8px 10px; border-radius: 6px; font-size: 0.75rem;
-      cursor: pointer; display: flex; flex-direction: column; gap: 2px; border: 1px solid #334155;
-    }
-    .search-result-item:hover { background: #334155; border-color: #ef4444; }
-    .item-title { font-weight: bold; color: #f8fafc; }
-    .item-sub { font-size: 0.65rem; color: #94a3b8; }
-    .search-manual-tip {
-      font-size: 0.7rem; color: #38bdf8; text-align: center; cursor: pointer; padding: 4px;
-      border-top: 1px dashed #334155; margin-top: 4px;
-    }
-
-    .bottom-panel {
-      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
-      background: rgba(15, 23, 42, 0.95); border-top: 1px solid #334155;
-      padding: 10px 14px; border-radius: 16px 16px 0 0; max-height: 220px;
-    }
-    .target-box {
-      background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444;
-      border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; margin-bottom: 8px;
-      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-    }
+    .search-target-input { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 0.85rem; outline: none; }
+    .btn-search-go { background: #ef4444; color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-weight: bold; cursor: pointer; }
+    .btn-search-close { background: #334155; color: #cbd5e1; border: none; border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+    .search-results-list { max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+    .search-result-item { background: #1e293b; padding: 8px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; }
+    .bottom-panel { position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000; background: rgba(15,23,42,0.95); border-top: 1px solid #334155; padding: 10px 14px; border-radius: 16px 16px 0 0; }
+    .target-box { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
     .member-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-    .member-card {
-      background: #1e293b; border: 1px solid #334155; border-radius: 8px;
-      padding: 6px 10px; min-width: 140px; font-size: 0.72rem; flex-shrink: 0;
-      display: flex; align-items: center; gap: 8px; cursor: pointer;
-    }
-    .member-card.is-me { border-color: #06c755; background: rgba(6, 199, 85, 0.15); }
-    .member-card.is-friend { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
-    .member-card-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #0f172a; flex-shrink: 0; }
-
+    .member-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 6px 10px; min-width: 140px; font-size: 0.72rem; flex-shrink: 0; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .member-card.is-me { border-color: #06c755; background: rgba(6,199,85,0.15); }
+    .member-card.is-friend { border-color: #38bdf8; background: rgba(56,189,248,0.1); }
+    .member-card-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
     .line-user-pin { text-align: center; position: relative; }
-    .speech-bubble {
-      position: absolute; bottom: 58px; left: 50%; transform: translateX(-50%);
-      background: #0f172a; color: #38bdf8; border: 1.5px solid #38bdf8;
-      padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold;
-      white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.5); pointer-events: none;
-    }
-    .speech-bubble::after {
-      content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-      border: 5px solid transparent; border-top-color: #38bdf8;
-    }
-    .pin-img {
-      width: 44px; height: 44px; border-radius: 50%; border: 3px solid #06c755;
-      box-shadow: 0 0 14px rgba(6,199,85,0.9); object-fit: cover; background: #000;
-    }
+    .speech-bubble { position: absolute; bottom: 58px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #38bdf8; border: 1.5px solid #38bdf8; padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; white-space: nowrap; }
+    .pin-img { width: 44px; height: 44px; border-radius: 50%; border: 3px solid #06c755; box-shadow: 0 0 14px rgba(6,199,85,0.9); object-fit: cover; background: #000; }
     .pin-img.friend-pin { border-color: #38bdf8; box-shadow: 0 0 14px rgba(56,189,248,0.9); }
-    .pin-name {
-      background: rgba(0,0,0,0.85); color: #fff; font-size: 0.68rem; font-weight: bold;
-      padding: 2px 6px; border-radius: 8px; border: 1px solid #06c755; white-space: nowrap;
-    }
+    .pin-name { background: rgba(0,0,0,0.85); color: #fff; font-size: 0.68rem; font-weight: bold; padding: 2px 6px; border-radius: 8px; border: 1px solid #06c755; white-space: nowrap; }
     .pin-name.friend-name { border-color: #38bdf8; }
-
-    .nav-popup { text-align: center; color: #1e293b; padding: 4px; }
-    .nav-btn {
-      display: inline-block; margin-top: 6px; background: #2563eb; color: #fff !important;
-      padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.75rem; font-weight: bold;
-    }
-
-    #chatDrawer {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 380px; z-index: 2000;
-      background: #0f172a; border-top: 2px solid #38bdf8; border-radius: 20px 20px 0 0;
-      display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s ease;
-      box-shadow: 0 -10px 25px rgba(0,0,0,0.8);
-    }
+    .nav-btn { display: inline-block; margin-top: 6px; background: #2563eb; color: #fff !important; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.75rem; font-weight: bold; }
+    #chatDrawer { position: fixed; bottom: 0; left: 0; right: 0; height: 380px; z-index: 2000; background: #0f172a; border-top: 2px solid #38bdf8; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s ease; }
     #chatDrawer.open { transform: translateY(0); }
-    .chat-header {
-      padding: 12px 16px; border-bottom: 1px solid #334155; display: flex;
-      justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.9rem;
-    }
+    .chat-header { padding: 12px 16px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
     .chat-messages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-    .chat-bubble {
-      display: flex; gap: 8px; max-width: 85%; align-items: flex-start; font-size: 0.8rem;
-    }
+    .chat-bubble { display: flex; gap: 8px; max-width: 85%; align-items: flex-start; font-size: 0.8rem; }
     .chat-bubble.mine { align-self: flex-end; flex-direction: row-reverse; }
-    .chat-bubble-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #334155; flex-shrink: 0; }
-    .chat-bubble-text {
-      background: #1e293b; border: 1px solid #334155; padding: 6px 10px; border-radius: 12px;
-      color: #f1f5f9; word-break: break-word;
-    }
+    .chat-bubble-text { background: #1e293b; border: 1px solid #334155; padding: 6px 10px; border-radius: 12px; color: #f1f5f9; }
     .chat-bubble.mine .chat-bubble-text { background: #06c755; color: #fff; border: none; }
-    .chat-time { font-size: 0.6rem; color: #64748b; margin-top: 2px; }
-
-    .chat-input-bar {
-      padding: 10px 14px; border-top: 1px solid #334155; display: flex; gap: 8px; background: #0b0f19;
-    }
-    .chat-input {
-      flex: 1; background: #1e293b; border: 1px solid #475569; border-radius: 20px;
-      padding: 8px 14px; color: #fff; font-size: 0.85rem; outline: none;
-    }
-    .btn-send {
-      background: #38bdf8; color: #0f172a; border: none; border-radius: 20px;
-      padding: 8px 16px; font-weight: bold; cursor: pointer;
-    }
-
-    #modalAccount {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000;
-      display: none; align-items: center; justify-content: center; padding: 20px;
-      backdrop-filter: blur(8px);
-    }
-    .account-card {
-      background: #1e293b; border: 1px solid #475569; border-radius: 20px;
-      width: 100%; max-width: 340px; padding: 24px; text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    }
-    .acc-avatar {
-      width: 72px; height: 72px; border-radius: 50%; border: 3px solid #06c755;
-      margin: 0 auto 12px; object-fit: cover; box-shadow: 0 0 15px rgba(6,199,85,0.6);
-      background: #0f172a;
-    }
-    .acc-name { font-size: 1.15rem; font-weight: bold; color: #fff; margin-bottom: 4px; }
-    .acc-id { font-size: 0.75rem; color: #94a3b8; margin-bottom: 20px; word-break: break-all; }
-    .btn-acc {
-      width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.9rem;
-      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      gap: 10px; margin-bottom: 10px; text-decoration: none;
-    }
+    .chat-input-bar { padding: 10px 14px; border-top: 1px solid #334155; display: flex; gap: 8px; background: #0b0f19; }
+    .chat-input { flex: 1; background: #1e293b; border: 1px solid #475569; border-radius: 20px; padding: 8px 14px; color: #fff; outline: none; }
+    .btn-send { background: #38bdf8; color: #0f172a; border: none; border-radius: 20px; padding: 8px 16px; font-weight: bold; cursor: pointer; }
+    #modalAccount { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .account-card { background: #1e293b; border: 1px solid #475569; border-radius: 20px; width: 100%; max-width: 340px; padding: 24px; text-align: center; }
+    .btn-acc { width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
     .btn-acc-line { background: #06c755; color: #fff; }
     .btn-acc-google { background: #fff; color: #1f2937; }
     .btn-acc-logout { background: #ef4444; color: #fff; margin-top: 8px; }
@@ -209,23 +65,15 @@
   </style>
 </head>
 <body style="background:#0b0f19; margin:0; padding:0; overflow:hidden;">
-
-  <!-- แถบบน: โลโก้หมุดนีออนของแท้ SVG + โปรไฟล์ -->
   <div class="top-bar">
-    <div class="user-profile-badge" id="btnProfileHeader" title="แตะเพื่อจัดการบัญชี/เข้าสู่ระบบ/ออกจากระบบ">
+    <div class="user-profile-badge" id="btnProfileHeader" title="แตะเพื่อจัดการบัญชี">
       <a href="dashboard.html" class="btn-back-dash" title="กลับหน้า Dashboard">◀</a>
-      
-      <!-- โลโก้แอปนีออนแบบ SVG คมกริบ ไม่แตก ไม่พัง -->
-      <div style="display:flex; align-items:center; gap:6px; background:#0f172a; padding:3px 8px 3px 4px; border-radius:10px; border:1px solid #06c755; box-shadow:0 0 8px rgba(6,199,85,0.4);">
+      <div style="display:flex; align-items:center; gap:6px; background:#0f172a; padding:3px 8px 3px 4px; border-radius:10px; border:1px solid #06c755;">
         <div class="app-logo-badge">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#06c755" stroke="#ffffff" stroke-width="1.5"/>
-            <circle cx="12" cy="9" r="3" fill="#ffffff"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#06c755" stroke="#ffffff" stroke-width="1.5"/><circle cx="12" cy="9" r="3" fill="#ffffff"/></svg>
         </div>
-        <span style="font-size:0.75rem; font-weight:bold; color:#f8fafc; letter-spacing:0.5px;">U-Nhai</span>
+        <span style="font-size:0.75rem; font-weight:bold; color:#f8fafc;">U-Nhai</span>
       </div>
-
       <div style="display:flex; align-items:center; gap:6px;">
         <img id="myAvatarImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" referrerpolicy="no-referrer" class="user-avatar-mini" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:2px solid #38bdf8;">
         <span id="myNameText" style="max-width:85px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:bold;">สหาย</span>
@@ -239,32 +87,27 @@
 
   <div id="searchTargetBox">
     <div class="search-input-group">
-      <input type="text" class="search-target-input" id="searchTargetInput" placeholder="🔍 พิมพ์ชื่อสถานที่ (เช่น สยาม, เซ็นทรัล)...">
+      <input type="text" class="search-target-input" id="searchTargetInput" placeholder="🔍 ค้นหาสถานที่ (สยาม, เซ็นทรัล)...">
       <button class="btn-search-go" id="btnSearchTargetGo">ค้นหา</button>
       <button class="btn-search-close" id="btnSearchTargetClose">✕</button>
     </div>
     <div class="search-results-list" id="searchResultsList"></div>
-    <div class="search-manual-tip" id="btnManualPickTip">👉 หรือ แตะบนแผนที่เพื่อปักหมุดเอง</div>
+    <div style="font-size:0.7rem; color:#38bdf8; text-align:center; cursor:pointer; padding:4px;" id="btnManualPickTip">👉 หรือ แตะบนแผนที่เพื่อปักหมุดเอง</div>
   </div>
 
   <div class="fab-group">
-    <button class="btn-fab" id="btnToggleChat" title="เปิดห้องแชทสด">
-      💬<span class="chat-badge" id="chatBadge">0</span>
-    </button>
-    <button class="btn-fab active" id="btnFollowMe" title="ล็อกมุมกล้องตามตัว">🎯</button>
-    <button class="btn-fab" id="btnMyLoc" title="ดึงพิกัดปัจจุบัน">📍</button>
-    <button class="btn-fab" id="btnSetTarget" title="ตั้งจุดนัดพบ (ค้นหาสถานที่)">🚩</button>
-    <button class="btn-fab" id="btnShareLine" title="แชร์เข้ากลุ่ม LINE">📤</button>
-    <button class="btn-fab" id="btnClearGhosts" title="ล้างหมุดผีทิ้ง" style="background:#7f1d1d; border-color:#ef4444;">🧹</button>
+    <button class="btn-fab" id="btnToggleChat">💬<span class="chat-badge" id="chatBadge">0</span></button>
+    <button class="btn-fab active" id="btnFollowMe">🎯</button>
+    <button class="btn-fab" id="btnMyLoc">📍</button>
+    <button class="btn-fab" id="btnSetTarget">🚩</button>
+    <button class="btn-fab" id="btnShareLine">📤</button>
+    <button class="btn-fab" id="btnClearGhosts" style="background:#7f1d1d; border-color:#ef4444;">🧹</button>
   </div>
 
   <div id="map"></div>
 
   <div id="chatDrawer">
-    <div class="chat-header">
-      <span>💬 แชทแก๊งสด (Live Chat)</span>
-      <span style="cursor:pointer; font-size:1.2rem;" id="btnCloseChat">✕</span>
-    </div>
+    <div class="chat-header"><span>💬 แชทแก๊งสด</span><span style="cursor:pointer; font-size:1.2rem;" id="btnCloseChat">✕</span></div>
     <div class="chat-messages" id="chatFeed"></div>
     <div class="chat-input-bar">
       <input type="text" class="chat-input" id="chatInput" placeholder="พิมพ์ข้อความในแก๊ง..." maxlength="150">
@@ -280,22 +123,15 @@
     <div class="member-scroll" id="memberList"></div>
   </div>
 
-  <!-- Modal บัญชีผู้ใช้: จัดการล็อกอิน LINE / Google / Logout -->
   <div id="modalAccount" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; padding:20px;">
     <div class="account-card">
-      <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="acc-avatar" referrerpolicy="no-referrer">
-      <div class="acc-name" id="accModalName">สหาย</div>
-      <div class="acc-id" id="accModalId">สถานะ: บัญชีชั่วคราว</div>
-
+      <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" style="width:72px; height:72px; border-radius:50%; border:3px solid #06c755; margin:0 auto 12px; object-fit:cover; background:#0f172a;">
+      <div style="font-size:1.15rem; font-weight:bold; color:#fff; margin-bottom:4px;" id="accModalName">สหาย</div>
+      <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:20px;" id="accModalId">สถานะ: บัญชีชั่วคราว</div>
       <div id="accLoginActions">
-        <button class="btn-acc btn-acc-line" id="btnAccLoginLine">
-          <span>💬</span> เข้าสู่ระบบด้วย LINE
-        </button>
-        <button class="btn-acc btn-acc-google" id="btnAccLoginGoogle">
-          <span>🌐</span> เข้าสู่ระบบด้วย Google
-        </button>
+        <button class="btn-acc btn-acc-line" id="btnAccLoginLine"><span>💬</span> เข้าสู่ระบบด้วย LINE</button>
+        <button class="btn-acc btn-acc-google" id="btnAccLoginGoogle"><span>🌐</span> เข้าสู่ระบบด้วย Google</button>
       </div>
-
       <button class="btn-acc btn-acc-logout" id="btnAccLogout">🚪 ออกจากระบบ (Log out)</button>
       <button class="btn-acc btn-acc-close" id="btnAccCloseModal">ปิดหน้าต่าง</button>
     </div>
@@ -306,62 +142,13 @@
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
     const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
-    // ตรวจจับภาษาเริ่มต้นของเครื่อง
-    const deviceLang = (navigator.language || navigator.userLanguage || "th").toLowerCase();
-    const isThai = deviceLang.startsWith("th");
-
-    const i18n = {
-      title: isThai ? "📍 U-Nhai // แผนที่แก๊งสด" : "📍 U-Nhai // Squad Live Map",
-      connecting: isThai ? "กำลังเชื่อมต่อ..." : "Connecting...",
-      gpsReady: isThai ? "📡 GPS สดพร้อม" : "📡 Live GPS Ready",
-      gpsOff: isThai ? "⚠️ ไม่เปิด GPS" : "⚠️ GPS Disabled",
-      searchPlaceholder: isThai ? "🔍 พิมพ์ชื่อสถานที่ (เช่น สยาม, เซ็นทรัล)..." : "🔍 Search places (e.g. Central, Mall, Airport)...",
-      searchBtn: isThai ? "ค้นหา" : "Search",
-      manualPickTip: isThai ? "👉 หรือ แตะบนแผนที่เพื่อปักหมุดเอง" : "👉 Or tap anywhere on map to pin",
-      searching: isThai ? "🔍 กำลังค้นหา" : "🔍 Searching",
-      notFound: isThai ? "❌ ไม่พบสถานที่ ลองใช้คำค้นหาอื่น" : "❌ Place not found, try another keyword",
-      searchError: isThai ? "เกิดข้อผิดพลาดในการค้นหา ลองอีกครั้ง" : "Search error, please try again",
-      chatTitle: isThai ? "💬 แชทแก๊งสด (Live Chat)" : "💬 Squad Live Chat",
-      chatPlaceholder: isThai ? "พิมพ์ข้อความในแก๊ง..." : "Type message to squad...",
-      sendBtn: isThai ? "ส่ง" : "Send",
-      targetLabel: isThai ? "🚩 นัดพบ:" : "🚩 Rendezvous:",
-      targetNone: isThai ? "ยังไม่ได้กำหนด" : "Not set yet",
-      targetTapPin: isThai ? "(แตะเพื่อปักหมุด)" : "(Tap to set pin)",
-      targetNavMaps: isThai ? "🚗 นำทางด้วย Google Maps" : "🚗 Navigate with Google Maps",
-      navGoogle: isThai ? "🚗 นำทางด้วย Google Maps" : "🚗 Navigate with Google Maps",
-      navTarget: isThai ? "🚗 นำทางไปยังจุดนัดพบ" : "🚗 Navigate to Rendezvous",
-      meLabel: isThai ? "(ฉัน)" : "(Me)",
-      awayLabel: isThai ? "ห่าง" : "Away",
-      mUnit: isThai ? "ม." : "m",
-      kmUnit: isThai ? "กม." : "km",
-      clearGhostsConfirm: isThai ? "ต้องการล้างหมุดผีและแชทของห้อง [ROOM] ใช่หรือไม่?" : "Do you want to clear ghost pins and chat for room [ROOM]?",
-      clearGhostsDone: isThai ? "✅ ล้างห้องนี้เกลี้ยงแล้ว!" : "✅ Cleared room completely!",
-      accTemp: isThai ? "⚠️ บัญชีชั่วคราว (กดล็อกอินด้านล่าง)" : "⚠️ Temporary Account (Log in below)",
-      accLogged: isThai ? "● บัญชี:" : "● Account:",
-      loginLine: isThai ? "เข้าสู่ระบบด้วย LINE" : "Log in with LINE",
-      loginGoogle: isThai ? "เข้าสู่ระบบด้วย Google" : "Log in with Google",
-      logoutBtn: isThai ? "🚪 ออกจากระบบ (Log out)" : "🚪 Log out",
-      closeBtn: isThai ? "ปิดหน้าต่าง" : "Close",
-      logoutConfirm: isThai ? "ต้องการออกจากระบบ (Log out) ใช่หรือไม่?\nหมุดของคุณจะถูกเคลียร์และเริ่มเซสชันใหม่" : "Do you want to log out?\nYour pin will be cleared and session reset.",
-      logoutDone: isThai ? "ออกจากระบบเรียบร้อย" : "Logged out successfully",
-      defaultGuest: isThai ? "สหาย" : "Friend",
-      pinPrompt: isThai ? "🚩 ตั้งชื่อจุดนัดพบนี้:" : "🚩 Name this rendezvous point:",
-      pinDefault: isThai ? "จุดนัดพบแก๊ง" : "Squad Meetup",
-      googlePrompt: isThai ? "กรอกชื่อหรืออีเมล Google สำหรับแสดงตัวตนในแผนที่:" : "Enter your name or Google email for identity on map:",
-      loggedAs: isThai ? "เข้าสู่ระบบในชื่อ" : "Logged in as",
-      pinnedAt: isThai ? "ปักหมุดจุดนัดพบที่" : "Pinned rendezvous at",
-      copied: isThai ? "คัดลอกลิงก์ส่งเข้า LINE กลุ่มได้เลย:\n" : "Room link copied to clipboard:\n"
-    };
-
-    document.title = i18n.title;
+    const isThai = (navigator.language || "th").toLowerCase().startsWith("th");
     const currentRoomId = new URLSearchParams(window.location.search).get("room") || "default";
-    const roomBadgeEl = document.getElementById("roomBadge");
-    if (roomBadgeEl) roomBadgeEl.textContent = currentRoomId;
+    document.getElementById("roomBadge").textContent = currentRoomId;
 
     let myUserId = localStorage.getItem("SQUAD_UID") || ("U_" + Date.now().toString().slice(-6));
     localStorage.setItem("SQUAD_UID", myUserId);
-
-    let myName = localStorage.getItem("SQUAD_UNAME") || (i18n.defaultGuest + "_" + myUserId.slice(-4));
+    let myName = localStorage.getItem("SQUAD_UNAME") || (isThai ? "สหาย_" : "Guest_") + myUserId.slice(-4);
     let myAvatar = localStorage.getItem("SQUAD_UAVATAR") || DEFAULT_AVATAR;
     let authProvider = localStorage.getItem("SQUAD_AUTH_PROVIDER") || "";
     let isLoggedIn = !!authProvider;
@@ -372,16 +159,9 @@
     let accuracyCircle = null;
     let lastChatCount = 0, isChatOpen = false;
 
-    // แผนที่ Leaflet ใช้ OpenStreetMap เป็นหลัก (ไม่โดนบล็อกใน Brave/Chrome) พร้อมสลับ Google Maps
-    const map = L.map("map", { 
-      zoomControl: false, 
-      attributionControl: false 
-    }).setView([myLat, myLng], 17);
-
-    // เลเยอร์มาตรฐาน OpenStreetMap โหลดเร็ว ไม่ติดบล็อก ไม่จอเทา 100%
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19
-    }).addTo(map);
+    // แผนที่ OpenStreetMap โหลดเร็ว ไม่โดนบล็อกใน Brave 100%
+    const map = L.map("map", { zoomControl: false, attributionControl: false }).setView([myLat, myLng], 17);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
 
     setTimeout(() => { map.invalidateSize(); }, 300);
     window.addEventListener("resize", () => { map.invalidateSize(); });
@@ -390,106 +170,68 @@
       window.open(`https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLng}&destination=${destLat},${destLng}&travelmode=driving`, "_blank");
     }
 
-    // ฟังก์ชันเชื่อมต่อ LIFF แบบร้องขอเข้าสู่ระบบทันทีเมื่ออยู่นอก LINE
+    // ล็อกอิน LINE อัตโนมัติทันทีเมื่อเปิดผ่านบราวเซอร์ภายนอก
     async function initFastLiff() {
       try {
-        if (typeof liff === "undefined") {
-          console.warn("LIFF SDK not found");
-          updateUserUI();
-          return;
-        }
-
+        if (typeof liff === "undefined") { updateUserUI(); return; }
         await liff.init({ liffId: MY_LIFF_ID });
 
         if (liff.isLoggedIn()) {
           try {
-            const profile = await liff.getProfile();
-            myUserId = profile.userId;
-            myName = profile.displayName || myName;
-            myAvatar = profile.pictureUrl || myAvatar;
+            const p = await liff.getProfile();
+            myUserId = p.userId;
+            myName = p.displayName || myName;
+            myAvatar = p.pictureUrl || myAvatar;
             authProvider = "line";
             isLoggedIn = true;
-          } catch (pe) {
-            const idToken = liff.getDecodedIDToken();
-            if (idToken) {
-              myUserId = idToken.sub || myUserId;
-              myName = idToken.name || myName;
-              myAvatar = idToken.picture || myAvatar;
-              authProvider = "line";
-              isLoggedIn = true;
-            }
-          }
-
+          } catch(e) {}
           localStorage.setItem("SQUAD_UID", myUserId);
           localStorage.setItem("SQUAD_UNAME", myName);
           localStorage.setItem("SQUAD_UAVATAR", myAvatar);
           localStorage.setItem("SQUAD_AUTH_PROVIDER", "line");
         } else {
-          // ถ้าเปิดในแอป LINE ให้ล็อกอินทันที
-          if (liff.isInClient()) {
-            liff.login();
-            return;
-          }
-
-          // ตรวจสอบว่าเคยล็อกอิน Google ไว้หรือไม่
           const savedProv = localStorage.getItem("SQUAD_AUTH_PROVIDER");
           const savedUid = localStorage.getItem("SQUAD_UID");
           if (savedProv === "google" && savedUid) {
             authProvider = "google";
             isLoggedIn = true;
           } else if (!savedUid || savedUid.startsWith("U_")) {
-            // ถ้าเข้ามาในบราวเซอร์ภายนอกแบบยังไม่มีบัญชี ให้ร้องขอเข้าสู่ระบบจาก LINE ทันทีตามที่ต้องการ
+            // ร้องขอเข้าสู่ระบบจาก LINE ทันทีตามที่ต้องการ
             liff.login({ redirectUri: window.location.href });
             return;
           }
         }
-      } catch (err) {
-        console.warn("LIFF Init bypass:", err);
-      }
+      } catch(err) { console.warn("LIFF error:", err); }
 
       updateUserUI();
-
-      if (hasGps) {
-        renderMyMarker(myLat, myLng, true);
-        syncSquadLocation();
-      }
+      if (hasGps) { renderMyMarker(myLat, myLng, true); syncSquadLocation(); }
     }
     initFastLiff();
 
     function updateUserUI() {
-      const myNameEl = document.getElementById("myNameText");
-      if (myNameEl) myNameEl.textContent = myName;
-      const myAvatarEl = document.getElementById("myAvatarImg");
-      if (myAvatarEl) myAvatarEl.src = myAvatar;
+      document.getElementById("myNameText").textContent = myName;
+      document.getElementById("myAvatarImg").src = myAvatar;
+      document.getElementById("accModalAvatar").src = myAvatar;
+      document.getElementById("accModalName").textContent = myName;
 
-      const accAvatar = document.getElementById("accModalAvatar");
-      if (accAvatar) accAvatar.src = myAvatar;
-      const accName = document.getElementById("accModalName");
-      if (accName) accName.textContent = myName;
-      
       const accIdEl = document.getElementById("accModalId");
       const loginActions = document.getElementById("accLoginActions");
       const btnLogout = document.getElementById("btnAccLogout");
 
       if (isLoggedIn) {
-        if (accIdEl) accIdEl.innerHTML = `<span style="color:#06c755; font-weight:bold;">● ${i18n.accLogged} ${authProvider === "line" ? "LINE" : "Google"} (${myUserId.slice(-6)})</span>`;
-        if (loginActions) loginActions.style.display = "none";
-        if (btnLogout) btnLogout.style.display = "block";
+        accIdEl.innerHTML = `<span style="color:#06c755; font-weight:bold;">● บัญชี: ${authProvider === "line" ? "LINE" : "Google"} (${myUserId.slice(-6)})</span>`;
+        loginActions.style.display = "none";
+        btnLogout.style.display = "block";
       } else {
-        if (accIdEl) accIdEl.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">${i18n.accTemp}</span>`;
-        if (loginActions) loginActions.style.display = "block";
-        if (btnLogout) btnLogout.style.display = "none";
+        accIdEl.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">⚠️ บัญชีชั่วคราว (กดล็อกอินด้านล่าง)</span>`;
+        loginActions.style.display = "block";
+        btnLogout.style.display = "none";
       }
     }
 
     function renderMyMarker(lat, lng, forceUpdate = false, bubbleText = "") {
       const bubbleHtml = bubbleText ? `<div class="speech-bubble">💬 ${bubbleText}</div>` : "";
-      const pinHtml = `
-        <div class="line-user-pin">
-          ${bubbleHtml}
-          <span class="pin-name">${myName} ${i18n.meLabel}</span><br>
-          <img src="${myAvatar}" referrerpolicy="no-referrer" class="pin-img" onerror="this.src='${DEFAULT_AVATAR}'">
-        </div>`;
+      const pinHtml = `<div class="line-user-pin">${bubbleHtml}<span class="pin-name">${myName} (ฉัน)</span><br><img src="${myAvatar}" class="pin-img" onerror="this.src='${DEFAULT_AVATAR}'"></div>`;
 
       if (!markers[myUserId]) {
         markers[myUserId] = L.marker([lat, lng], {
@@ -498,16 +240,11 @@
         }).addTo(map);
       } else {
         markers[myUserId].setLatLng([lat, lng]);
-        if (forceUpdate || bubbleText) {
-          markers[myUserId].setIcon(L.divIcon({ html: pinHtml, className: "", iconSize: [44, 55], iconAnchor: [22, 50] }));
-        }
+        if (forceUpdate || bubbleText) markers[myUserId].setIcon(L.divIcon({ html: pinHtml, className: "", iconSize: [44, 55], iconAnchor: [22, 50] }));
       }
 
-      if (!accuracyCircle) {
-        accuracyCircle = L.circle([lat, lng], { radius: 15, color: "#06c755", fillOpacity: 0.15 }).addTo(map);
-      } else {
-        accuracyCircle.setLatLng([lat, lng]);
-      }
+      if (!accuracyCircle) accuracyCircle = L.circle([lat, lng], { radius: 15, color: "#06c755", fillOpacity: 0.15 }).addTo(map);
+      else accuracyCircle.setLatLng([lat, lng]);
     }
 
     function renderFriendMarker(member) {
@@ -516,26 +253,11 @@
       const bubbleHtml = hasRecentMsg ? `<div class="speech-bubble">💬 ${member.lastMsg}</div>` : "";
       const avatarSrc = member.avatar || DEFAULT_AVATAR;
 
-      const pinHtml = `
-        <div class="line-user-pin">
-          ${bubbleHtml}
-          <span class="pin-name friend-name">${member.name}</span><br>
-          <img src="${avatarSrc}" referrerpolicy="no-referrer" class="pin-img friend-pin" onerror="this.src='${DEFAULT_AVATAR}'">
-        </div>`;
-
-      const popupContent = `
-        <div class="nav-popup">
-          <b>${member.name}</b><br>
-          <span style="font-size:0.75rem; color:#64748b;">${i18n.awayLabel}: ${getDistanceText(myLat, myLng, member.lat, member.lng)}</span><br>
-          <a href="javascript:void(0)" onclick="openGoogleMapsNav(${member.lat}, ${member.lng})" class="nav-btn">
-            ${i18n.navGoogle}
-          </a>
-        </div>`;
+      const pinHtml = `<div class="line-user-pin">${bubbleHtml}<span class="pin-name friend-name">${member.name}</span><br><img src="${avatarSrc}" class="pin-img friend-pin" onerror="this.src='${DEFAULT_AVATAR}'"></div>`;
+      const popupContent = `<div style="text-align:center; color:#1e293b; padding:4px;"><b>${member.name}</b><br><span style="font-size:0.75rem; color:#64748b;">ห่าง: ${getDistanceText(myLat, myLng, member.lat, member.lng)}</span><br><a href="javascript:void(0)" onclick="openGoogleMapsNav(${member.lat}, ${member.lng})" class="nav-btn">🚗 นำทางด้วย Google Maps</a></div>`;
 
       if (!markers[uid]) {
-        markers[uid] = L.marker([member.lat, member.lng], {
-          icon: L.divIcon({ html: pinHtml, className: "", iconSize: [44, 55], iconAnchor: [22, 50] })
-        }).addTo(map).bindPopup(popupContent);
+        markers[uid] = L.marker([member.lat, member.lng], { icon: L.divIcon({ html: pinHtml, className: "", iconSize: [44, 55], iconAnchor: [22, 50] }) }).addTo(map).bindPopup(popupContent);
       } else {
         markers[uid].setLatLng([member.lat, member.lng]);
         markers[uid].setIcon(L.divIcon({ html: pinHtml, className: "", iconSize: [44, 55], iconAnchor: [22, 50] }));
@@ -546,14 +268,7 @@
     async function syncSquadLocation(pendingTarget, chatMessage) {
       if (!hasGps || !BACKEND_URL) return;
       try {
-        const payload = {
-          roomId: currentRoomId,
-          userId: myUserId,
-          name: myName,
-          avatar: myAvatar,
-          lat: myLat,
-          lng: myLng
-        };
+        const payload = { roomId: currentRoomId, userId: myUserId, name: myName, avatar: myAvatar, lat: myLat, lng: myLng };
         if (pendingTarget) payload.setTarget = pendingTarget;
         if (chatMessage) payload.chatMsg = chatMessage;
 
@@ -563,40 +278,26 @@
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-
         if (data && data.members) updateRosterAndMap(data.members);
         if (data && data.target) renderTarget(data.target);
         if (data && data.chat) updateChatFeed(data.chat);
-      } catch (e) {
-        console.warn("Sync error:", e);
-      }
+      } catch(e) {}
     }
 
     function updateChatFeed(messages) {
       const feed = document.getElementById("chatFeed");
-      if (!feed) return;
       feed.innerHTML = "";
       messages.forEach(m => {
         const isMine = m.userId === myUserId;
         const row = document.createElement("div");
         row.className = `chat-bubble ${isMine ? "mine" : ""}`;
-        row.innerHTML = `
-          <img src="${m.avatar || DEFAULT_AVATAR}" class="chat-bubble-avatar" referrerpolicy="no-referrer" onerror="this.src='${DEFAULT_AVATAR}'">
-          <div>
-            <div style="font-size:0.68rem; color:#94a3b8;">${m.name}</div>
-            <div class="chat-bubble-text">${m.text}</div>
-            <div class="chat-time">${m.time}</div>
-          </div>`;
+        row.innerHTML = `<img src="${m.avatar || DEFAULT_AVATAR}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; flex-shrink:0;" onerror="this.src='${DEFAULT_AVATAR}'"><div><div style="font-size:0.68rem; color:#94a3b8;">${m.name}</div><div class="chat-bubble-text">${m.text}</div></div>`;
         feed.appendChild(row);
       });
       feed.scrollTop = feed.scrollHeight;
-
       if (!isChatOpen && messages.length > lastChatCount) {
-        const badge = document.getElementById("chatBadge");
-        if (badge) {
-          badge.style.display = "block";
-          badge.textContent = (messages.length - lastChatCount);
-        }
+        document.getElementById("chatBadge").style.display = "block";
+        document.getElementById("chatBadge").textContent = (messages.length - lastChatCount);
       }
       lastChatCount = messages.length;
     }
@@ -604,97 +305,52 @@
     function getDistanceText(lat1, lon1, lat2, lon2) {
       if (!lat1 || !lat2) return "-";
       const d = getDistance(lat1, lon1, lat2, lon2);
-      return d < 1 ? (d * 1000).toFixed(0) + ` ${i18n.mUnit}` : d.toFixed(1) + ` ${i18n.kmUnit}`;
+      return d < 1 ? (d * 1000).toFixed(0) + " ม." : d.toFixed(1) + " กม.";
     }
 
     function updateRosterAndMap(membersList) {
       const listEl = document.getElementById("memberList");
-      if (!listEl) return;
       listEl.innerHTML = "";
-
       renderMyMarker(myLat, myLng);
-      let myDistText = currentTarget ? getDistanceText(myLat, myLng, currentTarget.lat, currentTarget.lng) : "-";
 
       const myCard = document.createElement("div");
       myCard.className = "member-card is-me";
       myCard.onclick = () => { autoFollow = true; map.setView([myLat, myLng], 17); };
-      myCard.innerHTML = `
-        <img src="${myAvatar}" referrerpolicy="no-referrer" class="member-card-img" onerror="this.src='${DEFAULT_AVATAR}'">
-        <div>
-          <div><b>${myName}</b> ${i18n.meLabel}</div>
-          <div style="color:#06c755; font-size:0.65rem;">🎯 ${i18n.targetLabel} ${myDistText}</div>
-        </div>`;
+      myCard.innerHTML = `<img src="${myAvatar}" class="member-card-img" onerror="this.src='${DEFAULT_AVATAR}'"><div><div><b>${myName}</b> (ฉัน)</div><div style="color:#06c755; font-size:0.65rem;">🎯 จุดนัดพบ: ${currentTarget ? getDistanceText(myLat, myLng, currentTarget.lat, currentTarget.lng) : "-"}</div></div>`;
       listEl.appendChild(myCard);
 
       membersList.forEach(m => {
         if (m.userId === myUserId) return;
         renderFriendMarker(m);
-
-        let distToMe = getDistanceText(myLat, myLng, m.lat, m.lng);
         const card = document.createElement("div");
         card.className = "member-card is-friend";
-        card.onclick = () => {
-          autoFollow = false;
-          document.getElementById("btnFollowMe").classList.remove("active");
-          map.setView([m.lat, m.lng], 17);
-          if (markers[m.userId]) markers[m.userId].openPopup();
-        };
-        card.innerHTML = `
-          <img src="${m.avatar || DEFAULT_AVATAR}" referrerpolicy="no-referrer" class="member-card-img" onerror="this.src='${DEFAULT_AVATAR}'">
-          <div>
-            <div><b>${m.name}</b></div>
-            <div style="color:#38bdf8; font-size:0.65rem;">📍 ${i18n.awayLabel} ${distToMe}</div>
-          </div>`;
+        card.onclick = () => { autoFollow = false; document.getElementById("btnFollowMe").classList.remove("active"); map.setView([m.lat, m.lng], 17); if (markers[m.userId]) markers[m.userId].openPopup(); };
+        card.innerHTML = `<img src="${m.avatar || DEFAULT_AVATAR}" class="member-card-img" onerror="this.src='${DEFAULT_AVATAR}'"><div><div><b>${m.name}</b></div><div style="color:#38bdf8; font-size:0.65rem;">📍 ห่าง ${getDistanceText(myLat, myLng, m.lat, m.lng)}</div></div>`;
         listEl.appendChild(card);
       });
     }
 
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition((pos) => {
-        myLat = pos.coords.latitude;
-        myLng = pos.coords.longitude;
-        const gpsEl = document.getElementById("gpsStatus");
-        if (gpsEl) {
-          gpsEl.textContent = i18n.gpsReady;
-          gpsEl.style.color = "#06c755";
-        }
-
-        if (!hasGps) {
-          hasGps = true;
-          map.setView([myLat, myLng], 17);
-          map.invalidateSize();
-        }
+        myLat = pos.coords.latitude; myLng = pos.coords.longitude;
+        document.getElementById("gpsStatus").textContent = "📡 GPS สดพร้อม";
+        document.getElementById("gpsStatus").style.color = "#06c755";
+        if (!hasGps) { hasGps = true; map.setView([myLat, myLng], 17); map.invalidateSize(); }
         renderMyMarker(myLat, myLng);
-
-        if (autoFollow) {
-          map.panTo([myLat, myLng], { animate: true, duration: 0.5 });
-        }
-
+        if (autoFollow) map.panTo([myLat, myLng], { animate: true, duration: 0.5 });
         syncSquadLocation();
       }, (err) => {
-        const gpsEl = document.getElementById("gpsStatus");
-        if (gpsEl) {
-          gpsEl.textContent = i18n.gpsOff;
-          gpsEl.style.color = "#ef4444";
-        }
-      }, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 8000
-      });
+        document.getElementById("gpsStatus").textContent = "⚠️ ไม่เปิด GPS";
+        document.getElementById("gpsStatus").style.color = "#ef4444";
+      }, { enableHighAccuracy: true, maximumAge: 0, timeout: 8000 });
     }
 
-    setInterval(() => {
-      syncSquadLocation();
-    }, 3000);
+    setInterval(() => { syncSquadLocation(); }, 3000);
 
     function getDistance(lat1, lon1, lat2, lon2) {
       const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
       return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
@@ -702,40 +358,20 @@
       currentTarget = t;
       const label = document.getElementById("targetNameDisplay");
       const actionText = document.getElementById("targetActionText");
-
       if (!t || !t.lat) {
-        if (label) label.textContent = i18n.targetNone;
-        if (actionText) {
-          actionText.textContent = i18n.targetTapPin;
-          actionText.style.color = "#cbd5e1";
-        }
+        label.textContent = "ยังไม่ได้กำหนด"; actionText.textContent = "(แตะเพื่อปักหมุด)";
         if (targetMarker) map.removeLayer(targetMarker);
         return;
       }
-
       let distText = getDistanceText(myLat, myLng, t.lat, t.lng);
-      if (label) label.textContent = `${t.name} (${distText})`;
-      if (actionText) {
-        actionText.textContent = i18n.targetNavMaps;
-        actionText.style.color = "#22c55e";
-      }
+      label.textContent = `${t.name} (${distText})`;
+      actionText.textContent = "🚗 นำทางด้วย Google Maps"; actionText.style.color = "#22c55e";
 
-      const popupTarget = `
-        <div class="nav-popup">
-          <b>🚩 ${i18n.targetLabel} ${t.name}</b><br>
-          <span style="font-size:0.75rem; color:#64748b;">${i18n.meLabel}: ${t.by} (${i18n.awayLabel} ${distText})</span><br>
-          <a href="javascript:void(0)" onclick="openGoogleMapsNav(${t.lat}, ${t.lng})" class="nav-btn" style="background:#ef4444;">
-            ${i18n.navTarget}
-          </a>
-        </div>`;
-
+      const popupTarget = `<div style="text-align:center; color:#1e293b; padding:4px;"><b>🚩 นัดพบ: ${t.name}</b><br><span style="font-size:0.75rem; color:#64748b;">ปักโดย: ${t.by} (ห่าง ${distText})</span><br><a href="javascript:void(0)" onclick="openGoogleMapsNav(${t.lat}, ${t.lng})" class="nav-btn" style="background:#ef4444;">🚗 นำทางไปยังจุดนัดพบ</a></div>`;
       if (!targetMarker) {
-        targetMarker = L.marker([t.lat, t.lng], {
-          icon: L.divIcon({ html: '<span style="font-size:2rem;">🚩</span>', className: "", iconSize: [36, 36], iconAnchor: [18, 30] })
-        }).addTo(map).bindPopup(popupTarget);
+        targetMarker = L.marker([t.lat, t.lng], { icon: L.divIcon({ html: '<span style="font-size:2rem;">🚩</span>', className: "", iconSize: [36, 36], iconAnchor: [18, 30] }) }).addTo(map).bindPopup(popupTarget);
       } else {
-        targetMarker.setLatLng([t.lat, t.lng]);
-        targetMarker.setPopupContent(popupTarget);
+        targetMarker.setLatLng([t.lat, t.lng]); targetMarker.setPopupContent(popupTarget);
       }
     }
 
@@ -751,17 +387,10 @@
     };
 
     document.getElementById("btnMyLoc").onclick = () => {
-      if (hasGps) {
-        autoFollow = true;
-        document.getElementById("btnFollowMe").classList.add("active");
-        map.setView([myLat, myLng], 17);
-      }
+      if (hasGps) { autoFollow = true; document.getElementById("btnFollowMe").classList.add("active"); map.setView([myLat, myLng], 17); }
     };
 
-    map.on("dragstart", () => {
-      autoFollow = false;
-      document.getElementById("btnFollowMe").classList.remove("active");
-    });
+    map.on("dragstart", () => { autoFollow = false; document.getElementById("btnFollowMe").classList.remove("active"); });
 
     const searchTargetBox = document.getElementById("searchTargetBox");
     const searchTargetInput = document.getElementById("searchTargetInput");
@@ -769,269 +398,111 @@
 
     document.getElementById("btnSetTarget").onclick = () => {
       searchTargetBox.style.display = (searchTargetBox.style.display === "flex") ? "none" : "flex";
-      if (searchTargetBox.style.display === "flex") {
-        searchTargetInput.focus();
-        searchResultsList.innerHTML = "";
-      }
+      if (searchTargetBox.style.display === "flex") { searchTargetInput.focus(); searchResultsList.innerHTML = ""; }
     };
 
-    document.getElementById("btnSearchTargetClose").onclick = () => {
-      searchTargetBox.style.display = "none";
-      isTargetMode = false;
-      document.getElementById("btnSetTarget").classList.remove("active");
-    };
+    document.getElementById("btnSearchTargetClose").onclick = () => { searchTargetBox.style.display = "none"; isTargetMode = false; document.getElementById("btnSetTarget").classList.remove("active"); };
 
     async function executePlaceSearch() {
-      const q = searchTargetInput.value.trim();
-      if (!q) return;
-
-      searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#94a3b8;">${i18n.searching} "${q}"...</div>`;
-
+      const q = searchTargetInput.value.trim(); if (!q) return;
+      searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#94a3b8;">🔍 กำลังค้นหา "${q}"...</div>`;
       try {
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=th&limit=5&addressdetails=1`;
-        const res = await fetch(url, { headers: { "Accept-Language": isThai ? "th,en" : "en,th" } });
+        const res = await fetch(url, { headers: { "Accept-Language": "th,en" } });
         const data = await res.json();
-
-        if (!data || !data.length) {
-          searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#ef4444;">${i18n.notFound}</div>`;
-          return;
-        }
-
+        if (!data || !data.length) { searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#ef4444;">❌ ไม่พบสถานที่</div>`; return; }
         searchResultsList.innerHTML = "";
         data.forEach(item => {
-          const lat = parseFloat(item.lat);
-          const lon = parseFloat(item.lon);
+          const lat = parseFloat(item.lat); const lon = parseFloat(item.lon);
           const shortName = item.name || item.display_name.split(",")[0];
-          const fullDesc = item.display_name;
-
-          const div = document.createElement("div");
-          div.className = "search-result-item";
-          div.innerHTML = `
-            <div class="item-title">📍 ${shortName}</div>
-            <div class="item-sub">${fullDesc.substring(0, 75)}...</div>
-          `;
+          const div = document.createElement("div"); div.className = "search-result-item";
+          div.innerHTML = `<b>📍 ${shortName}</b><div style="font-size:0.65rem; color:#94a3b8;">${item.display_name.substring(0,60)}...</div>`;
           div.onclick = () => {
-            selectAndPinTarget(shortName, lat, lon);
+            searchTargetBox.style.display = "none"; autoFollow = false;
+            document.getElementById("btnFollowMe").classList.remove("active");
+            map.flyTo([lat, lon], 17, { duration: 1.5 });
+            const newTarget = { name: shortName, lat: lat, lng: lon, by: myName };
+            renderTarget(newTarget); syncSquadLocation(newTarget);
           };
           searchResultsList.appendChild(div);
         });
-      } catch (err) {
-        searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#ef4444;">${i18n.searchError}</div>`;
-      }
+      } catch (err) { searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#ef4444;">เกิดข้อผิดพลาด</div>`; }
     }
 
     document.getElementById("btnSearchTargetGo").onclick = executePlaceSearch;
-    searchTargetInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") executePlaceSearch();
-    });
-
-    function selectAndPinTarget(placeName, lat, lng) {
-      searchTargetBox.style.display = "none";
-      autoFollow = false;
-      document.getElementById("btnFollowMe").classList.remove("active");
-
-      map.flyTo([lat, lng], 17, { duration: 1.5 });
-
-      const newTarget = { name: placeName, lat: lat, lng: lng, by: myName };
-      renderTarget(newTarget);
-      syncSquadLocation(newTarget);
-      alert(`✅ ${i18n.pinnedAt} [${placeName}]`);
-    }
+    searchTargetInput.addEventListener("keypress", (e) => { if (e.key === "Enter") executePlaceSearch(); });
 
     document.getElementById("btnManualPickTip").onclick = () => {
-      searchTargetBox.style.display = "none";
-      isTargetMode = true;
-      document.getElementById("btnSetTarget").classList.add("active");
-      alert(i18n.manualPickTip);
+      searchTargetBox.style.display = "none"; isTargetMode = true; document.getElementById("btnSetTarget").classList.add("active");
+      alert("👉 แตะบนแผนที่เพื่อปักหมุดจุดนัดพบ");
     };
 
     map.on("click", (e) => {
       if (!isTargetMode) return;
-      const name = prompt(i18n.pinPrompt, i18n.pinDefault);
-      if (!name) return;
-      isTargetMode = false;
-      document.getElementById("btnSetTarget").classList.remove("active");
-
+      const name = prompt("🚩 ตั้งชื่อจุดนัดพบนี้:", "จุดนัดพบแก๊ง"); if (!name) return;
+      isTargetMode = false; document.getElementById("btnSetTarget").classList.remove("active");
       const newTarget = { name: name, lat: e.latlng.lat, lng: e.latlng.lng, by: myName };
-      renderTarget(newTarget);
-      syncSquadLocation(newTarget);
+      renderTarget(newTarget); syncSquadLocation(newTarget);
     });
 
-    // แชร์เข้า LINE
     document.getElementById("btnShareLine").onclick = () => {
       const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${currentRoomId}`;
       if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable("shareTargetPicker")) {
-        liff.shareTargetPicker([
-          {
-            type: "flex",
-            altText: `📍 แผนที่แก๊งสด: [${currentRoomId}]`,
-            contents: {
-              type: "bubble",
-              size: "kilo",
-              header: {
-                type: "box",
-                layout: "horizontal",
-                backgroundColor: "#0f172a",
-                contents: [
-                  { type: "text", text: "📍 U-Nhai", weight: "bold", color: "#06c755", size: "sm" },
-                  { type: "text", text: currentRoomId, weight: "bold", color: "#38bdf8", size: "xxs", align: "end" }
-                ]
-              },
-              body: {
-                type: "box",
-                layout: "vertical",
-                backgroundColor: "#1e293b",
-                spacing: "sm",
-                contents: [
-                  { type: "text", text: "🗺️ แผนที่พิกัดแก๊งสด", weight: "bold", size: "md", color: "#ffffff" },
-                  { type: "text", text: "แตะปุ่มด้านล่างเพื่อเปิดแผนที่และดูตำแหน่งเพื่อนทันที", size: "xs", color: "#94a3b8" }
-                ]
-              },
-              footer: {
-                type: "box",
-                layout: "vertical",
-                backgroundColor: "#0f172a",
-                contents: [
-                  {
-                    type: "button",
-                    style: "primary",
-                    color: "#06c755",
-                    height: "sm",
-                    action: {
-                      type: "uri",
-                      label: "🚗 เข้าดูแผนที่สด",
-                      uri: shareUrl
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        ]);
-      } else {
-        alert(i18n.copied + shareUrl);
-      }
+        liff.shareTargetPicker([{ type: "text", text: `📍 แผนที่แก๊งสด: [${currentRoomId}]\nเปิดดูตำแหน่งเพื่อนที่นี่: ${shareUrl}` }]);
+      } else { navigator.clipboard.writeText(shareUrl); alert("คัดลอกลิงก์ส่งเข้า LINE กลุ่มได้เลย:\n" + shareUrl); }
     };
 
-    // ล้างหมุดผี
     document.getElementById("btnClearGhosts").onclick = async () => {
-      if (confirm(i18n.clearGhostsConfirm.replace("[ROOM]", currentRoomId))) {
-        await fetch(BACKEND_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "clear", roomId: currentRoomId })
-        });
-        alert(i18n.clearGhostsDone);
+      if (confirm(`ต้องการล้างหมุดผีของห้อง [${currentRoomId}] ใช่หรือไม่?`)) {
+        await fetch(BACKEND_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "clear", roomId: currentRoomId }) });
         location.reload();
       }
     };
 
-    // แชทสด
     const chatDrawer = document.getElementById("chatDrawer");
     document.getElementById("btnToggleChat").onclick = () => {
-      isChatOpen = !isChatOpen;
-      chatDrawer.classList.toggle("open", isChatOpen);
-      if (isChatOpen) {
-        document.getElementById("chatBadge").style.display = "none";
-        document.getElementById("chatInput").focus();
-      }
+      isChatOpen = !isChatOpen; chatDrawer.classList.toggle("open", isChatOpen);
+      if (isChatOpen) { document.getElementById("chatBadge").style.display = "none"; document.getElementById("chatInput").focus(); }
     };
-    document.getElementById("btnCloseChat").onclick = () => {
-      isChatOpen = false;
-      chatDrawer.classList.remove("open");
-    };
+    document.getElementById("btnCloseChat").onclick = () => { isChatOpen = false; chatDrawer.classList.remove("open"); };
 
     async function sendChatMessage() {
-      const input = document.getElementById("chatInput");
-      const msg = input.value.trim();
-      if (!msg) return;
-
-      input.value = "";
-      renderMyMarker(myLat, myLng, true, msg);
+      const input = document.getElementById("chatInput"); const msg = input.value.trim(); if (!msg) return;
+      input.value = ""; renderMyMarker(myLat, myLng, true, msg);
       await syncSquadLocation(null, msg);
     }
-
     document.getElementById("btnSendMsg").onclick = sendChatMessage;
-    document.getElementById("chatInput").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") sendChatMessage();
-    });
+    document.getElementById("chatInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendChatMessage(); });
 
-    // จัดการระบบ Modal บัญชีผู้ใช้ & ล็อกอิน / ออกจากระบบ
     const modalAcc = document.getElementById("modalAccount");
-    const btnProfileHeader = document.getElementById("btnProfileHeader");
-    if (btnProfileHeader) {
-      btnProfileHeader.onclick = (e) => {
-        if (e.target.closest(".btn-back-dash")) return;
-        updateUserUI();
-        if (modalAcc) modalAcc.style.display = "flex";
-      };
-    }
-    const btnAccClose = document.getElementById("btnAccCloseModal");
-    if (btnAccClose) {
-      btnAccClose.onclick = () => {
-        if (modalAcc) modalAcc.style.display = "none";
-      };
-    }
-    if (modalAcc) {
-      modalAcc.onclick = (e) => {
-        if (e.target === modalAcc) modalAcc.style.display = "none";
-      };
-    }
+    document.getElementById("btnProfileHeader").onclick = (e) => { if (e.target.closest(".btn-back-dash")) return; updateUserUI(); modalAcc.style.display = "flex"; };
+    document.getElementById("btnAccCloseModal").onclick = () => { modalAcc.style.display = "none"; };
+    modalAcc.onclick = (e) => { if (e.target === modalAcc) modalAcc.style.display = "none"; };
 
-    // ล็อกอิน LINE
     document.getElementById("btnAccLoginLine").onclick = () => {
-      if (typeof liff !== "undefined") {
-        liff.login({ redirectUri: window.location.href });
-      } else {
-        alert("กำลังเชื่อมต่อระบบ LINE LIFF กรุณาลองใหม่อีกครั้ง");
-      }
+      if (typeof liff !== "undefined") liff.login({ redirectUri: window.location.href });
+      else alert("กำลังเชื่อมต่อ LINE...");
     };
 
-    // ล็อกอิน Google
     document.getElementById("btnAccLoginGoogle").onclick = () => {
-      const gEmail = prompt(i18n.googlePrompt, "");
+      const gEmail = prompt("กรอกชื่อหรืออีเมลสำหรับแสดงตัวตนในแผนที่:", "");
       if (gEmail && gEmail.trim()) {
         const cleanG = gEmail.trim();
         myUserId = "G_" + btoa(unescape(encodeURIComponent(cleanG))).replace(/=/g, "").slice(0, 10);
         myName = cleanG.split("@")[0];
         myAvatar = "https://cdn-icons-png.flaticon.com/512/300/300221.png";
-        authProvider = "google";
-        isLoggedIn = true;
-
-        localStorage.setItem("SQUAD_UID", myUserId);
-        localStorage.setItem("SQUAD_UNAME", myName);
-        localStorage.setItem("SQUAD_UAVATAR", myAvatar);
-        localStorage.setItem("SQUAD_AUTH_PROVIDER", "google");
-
-        updateUserUI();
-        if (modalAcc) modalAcc.style.display = "none";
-        renderMyMarker(myLat, myLng, true);
-        syncSquadLocation();
-        alert(`✅ ${i18n.loggedAs} [${myName}]`);
+        authProvider = "google"; isLoggedIn = true;
+        localStorage.setItem("SQUAD_UID", myUserId); localStorage.setItem("SQUAD_UNAME", myName);
+        localStorage.setItem("SQUAD_UAVATAR", myAvatar); localStorage.setItem("SQUAD_AUTH_PROVIDER", "google");
+        updateUserUI(); modalAcc.style.display = "none"; renderMyMarker(myLat, myLng, true); syncSquadLocation();
       }
     };
 
-    // ออกจากระบบ (Logout) ล้างหมุดบนแผนที่และรีเซ็ต
     document.getElementById("btnAccLogout").onclick = async () => {
-      if (confirm(i18n.logoutConfirm)) {
-        try {
-          await fetch(BACKEND_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ action: "logout", roomId: currentRoomId, userId: myUserId })
-          });
-        } catch (e) {}
-
-        localStorage.removeItem("SQUAD_UID");
-        localStorage.removeItem("SQUAD_UNAME");
-        localStorage.removeItem("SQUAD_UAVATAR");
-        localStorage.removeItem("SQUAD_AUTH_PROVIDER");
-
-        if (typeof liff !== "undefined" && liff.isLoggedIn()) {
-          liff.logout();
-        }
-
-        alert(i18n.logoutDone);
+      if (confirm("ต้องการออกจากระบบ (Log out) ใช่หรือไม่?\nหมุดของคุณจะถูกเคลียร์ออกจากห้อง")) {
+        try { await fetch(BACKEND_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "logout", roomId: currentRoomId, userId: myUserId }) }); } catch(e) {}
+        localStorage.removeItem("SQUAD_UID"); localStorage.removeItem("SQUAD_UNAME"); localStorage.removeItem("SQUAD_UAVATAR"); localStorage.removeItem("SQUAD_AUTH_PROVIDER");
+        if (typeof liff !== "undefined" && liff.isLoggedIn()) liff.logout();
         location.reload();
       }
     };
