@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>📍 U-Nhai // แผนที่แก๊งสด</title>
 
-  <!-- 1. LINE LIFF SDK 2.x -->
+  <!-- LINE LIFF SDK 2.x -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-  <!-- 2. Leaflet Map CSS & JS -->
+  <!-- Leaflet Map CSS & JS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
   
-  <!-- 3. Google Fonts -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -20,7 +20,6 @@
     body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0f19; color: #fff; }
     #map { width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1; background: #e5e3df; }
 
-    /* ซ่อนลายน้ำ */
     .leaflet-control-attribution { display: none !important; }
 
     .top-bar {
@@ -30,11 +29,10 @@
       display: flex; justify-content: space-between; align-items: center;
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
-    .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+    .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer; }
     .btn-back-dash { text-decoration: none; color: #38bdf8; font-size: 1.1rem; padding: 2px 6px; display: flex; align-items: center; border-radius: 6px; }
     .btn-back-dash:hover { background: rgba(56,189,248,0.2); }
     
-    /* โลโก้แอปหมุดนีออน */
     .app-logo-badge {
       display: flex; align-items: center; justify-content: center;
       width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #06c755;
@@ -182,10 +180,6 @@
       padding: 8px 16px; font-weight: bold; cursor: pointer;
     }
 
-    .profile-clickable { cursor: pointer; transition: opacity 0.15s ease; }
-    .profile-clickable:hover { opacity: 0.85; }
-
-    /* Modal บัญชีผู้ใช้ */
     #modalAccount {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000;
       display: none; align-items: center; justify-content: center; padding: 20px;
@@ -214,11 +208,11 @@
     .btn-acc-close { background: #334155; color: #cbd5e1; }
   </style>
 </head>
-<body>
+<body style="background:#0b0f19; margin:0; padding:0; overflow:hidden;">
 
-  <!-- แถบบน: โลโก้หมุดนีออนของแท้ + โปรไฟล์ -->
+  <!-- แถบบน: โลโก้หมุดนีออนของแท้ SVG + โปรไฟล์ -->
   <div class="top-bar">
-    <div class="user-profile-badge profile-clickable" id="btnProfileHeader" title="แตะเพื่อจัดการบัญชี/เข้าสู่ระบบ/ออกจากระบบ">
+    <div class="user-profile-badge" id="btnProfileHeader" title="แตะเพื่อจัดการบัญชี/เข้าสู่ระบบ/ออกจากระบบ">
       <a href="dashboard.html" class="btn-back-dash" title="กลับหน้า Dashboard">◀</a>
       
       <!-- โลโก้แอปนีออนแบบ SVG คมกริบ ไม่แตก ไม่พัง -->
@@ -233,8 +227,8 @@
       </div>
 
       <div style="display:flex; align-items:center; gap:6px;">
-        <img id="myAvatarImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" referrerpolicy="no-referrer" class="user-avatar-mini">
-        <span id="myNameText" style="max-width:85px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">สหาย</span>
+        <img id="myAvatarImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" referrerpolicy="no-referrer" class="user-avatar-mini" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:2px solid #38bdf8;">
+        <span id="myNameText" style="max-width:85px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:bold;">สหาย</span>
         <span class="room-badge-pill" id="roomBadge">...</span>
       </div>
     </div>
@@ -287,7 +281,7 @@
   </div>
 
   <!-- Modal บัญชีผู้ใช้: จัดการล็อกอิน LINE / Google / Logout -->
-  <div id="modalAccount">
+  <div id="modalAccount" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; padding:20px;">
     <div class="account-card">
       <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="acc-avatar" referrerpolicy="no-referrer">
       <div class="acc-name" id="accModalName">สหาย</div>
@@ -312,7 +306,7 @@
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
     const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
-    // ระบบตรวจจับภาษาเริ่มต้นของเครื่อง
+    // ตรวจจับภาษาเริ่มต้นของเครื่อง
     const deviceLang = (navigator.language || navigator.userLanguage || "th").toLowerCase();
     const isThai = deviceLang.startsWith("th");
 
@@ -359,37 +353,7 @@
       copied: isThai ? "คัดลอกลิงก์ส่งเข้า LINE กลุ่มได้เลย:\n" : "Room link copied to clipboard:\n"
     };
 
-    // นำเข้าข้อความตามภาษาเครื่อง
     document.title = i18n.title;
-    const gpsStatusEl = document.getElementById("gpsStatus");
-    if (gpsStatusEl) gpsStatusEl.textContent = i18n.gpsReady;
-    const searchInputEl = document.getElementById("searchTargetInput");
-    if (searchInputEl) searchInputEl.placeholder = i18n.searchPlaceholder;
-    const btnSearchEl = document.getElementById("btnSearchTargetGo");
-    if (btnSearchEl) btnSearchEl.textContent = i18n.searchBtn;
-    const manualTipEl = document.getElementById("btnManualPickTip");
-    if (manualTipEl) manualTipEl.textContent = i18n.manualPickTip;
-    const chatTitleEl = document.querySelector(".chat-header span");
-    if (chatTitleEl) chatTitleEl.textContent = i18n.chatTitle;
-    const chatInputEl = document.getElementById("chatInput");
-    if (chatInputEl) chatInputEl.placeholder = i18n.chatPlaceholder;
-    const btnSendEl = document.getElementById("btnSendMsg");
-    if (btnSendEl) btnSendEl.textContent = i18n.sendBtn;
-    const targetBoxB = document.getElementById("targetBox") ? document.getElementById("targetBox").querySelector("b") : null;
-    if (targetBoxB) targetBoxB.textContent = i18n.targetLabel;
-    const targetNameEl = document.getElementById("targetNameDisplay");
-    if (targetNameEl) targetNameEl.textContent = i18n.targetNone;
-    const targetActionEl = document.getElementById("targetActionText");
-    if (targetActionEl) targetActionEl.textContent = i18n.targetTapPin;
-    const btnLineEl = document.getElementById("btnAccLoginLine");
-    if (btnLineEl) btnLineEl.innerHTML = "<span>💬</span> " + i18n.loginLine;
-    const btnGEl = document.getElementById("btnAccLoginGoogle");
-    if (btnGEl) btnGEl.innerHTML = "<span>🌐</span> " + i18n.loginGoogle;
-    const btnLogoutEl = document.getElementById("btnAccLogout");
-    if (btnLogoutEl) btnLogoutEl.textContent = i18n.logoutBtn;
-    const btnCloseModalEl = document.getElementById("btnAccCloseModal");
-    if (btnCloseModalEl) btnCloseModalEl.textContent = i18n.closeBtn;
-
     const currentRoomId = new URLSearchParams(window.location.search).get("room") || "default";
     const roomBadgeEl = document.getElementById("roomBadge");
     if (roomBadgeEl) roomBadgeEl.textContent = currentRoomId;
@@ -402,39 +366,22 @@
     let authProvider = localStorage.getItem("SQUAD_AUTH_PROVIDER") || "";
     let isLoggedIn = !!authProvider;
 
-    const myNameTextEl = document.getElementById("myNameText");
-    if (myNameTextEl) myNameTextEl.textContent = myName;
-    const myAvatarImgEl = document.getElementById("myAvatarImg");
-    if (myAvatarImgEl) myAvatarImgEl.src = myAvatar;
-
     let myLat = 13.7563, myLng = 100.5018;
     let hasGps = false, isTargetMode = false, autoFollow = true;
     let markers = {}, targetMarker = null, currentTarget = null;
     let accuracyCircle = null;
     let lastChatCount = 0, isChatOpen = false;
 
-    // แผนที่ Leaflet พร้อมตัวสำรอง (Google Maps Tiles + OpenStreetMap fallback)
+    // แผนที่ Leaflet ใช้ OpenStreetMap เป็นหลัก (ไม่โดนบล็อกใน Brave/Chrome) พร้อมสลับ Google Maps
     const map = L.map("map", { 
       zoomControl: false, 
       attributionControl: false 
     }).setView([myLat, myLng], 17);
 
-    const googleTileLayer = L.tileLayer("https://{s}.google.com/vt/lyrs=m&hl=th&x={x}&y={y}&z={z}", {
-      maxZoom: 20,
-      subdomains: ["mt0", "mt1", "mt2", "mt3"]
-    });
-
-    const osmTileLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // เลเยอร์มาตรฐาน OpenStreetMap โหลดเร็ว ไม่ติดบล็อก ไม่จอเทา 100%
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19
-    });
-
-    googleTileLayer.addTo(map);
-    googleTileLayer.on("tileerror", function() {
-      if (!map.hasLayer(osmTileLayer)) {
-        map.removeLayer(googleTileLayer);
-        osmTileLayer.addTo(map);
-      }
-    });
+    }).addTo(map);
 
     setTimeout(() => { map.invalidateSize(); }, 300);
     window.addEventListener("resize", () => { map.invalidateSize(); });
@@ -443,7 +390,7 @@
       window.open(`https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLng}&destination=${destLat},${destLng}&travelmode=driving`, "_blank");
     }
 
-    // ฟังก์ชันเชื่อมต่อ LIFF
+    // ฟังก์ชันเชื่อมต่อ LIFF แบบร้องขอเข้าสู่ระบบทันทีเมื่ออยู่นอก LINE
     async function initFastLiff() {
       try {
         if (typeof liff === "undefined") {
@@ -478,18 +425,26 @@
           localStorage.setItem("SQUAD_UAVATAR", myAvatar);
           localStorage.setItem("SQUAD_AUTH_PROVIDER", "line");
         } else {
-          // ถ้าเปิดในแอป LINE ให้ล็อกอินอัตโนมัติ
+          // ถ้าเปิดในแอป LINE ให้ล็อกอินทันที
           if (liff.isInClient()) {
             liff.login();
             return;
           }
-          if (authProvider === "google" && localStorage.getItem("SQUAD_UID")) {
+
+          // ตรวจสอบว่าเคยล็อกอิน Google ไว้หรือไม่
+          const savedProv = localStorage.getItem("SQUAD_AUTH_PROVIDER");
+          const savedUid = localStorage.getItem("SQUAD_UID");
+          if (savedProv === "google" && savedUid) {
+            authProvider = "google";
             isLoggedIn = true;
+          } else if (!savedUid || savedUid.startsWith("U_")) {
+            // ถ้าเข้ามาในบราวเซอร์ภายนอกแบบยังไม่มีบัญชี ให้ร้องขอเข้าสู่ระบบจาก LINE ทันทีตามที่ต้องการ
+            liff.login({ redirectUri: window.location.href });
+            return;
           }
         }
       } catch (err) {
-        console.warn("LIFF init bypass:", err);
-        if (authProvider) isLoggedIn = true;
+        console.warn("LIFF Init bypass:", err);
       }
 
       updateUserUI();
@@ -808,7 +763,6 @@
       document.getElementById("btnFollowMe").classList.remove("active");
     });
 
-    // 🚩 ค้นหาสถานที่
     const searchTargetBox = document.getElementById("searchTargetBox");
     const searchTargetInput = document.getElementById("searchTargetInput");
     const searchResultsList = document.getElementById("searchResultsList");
@@ -1057,7 +1011,7 @@
       }
     };
 
-    // ออกจากระบบ (Logout)
+    // ออกจากระบบ (Logout) ล้างหมุดบนแผนที่และรีเซ็ต
     document.getElementById("btnAccLogout").onclick = async () => {
       if (confirm(i18n.logoutConfirm)) {
         try {
