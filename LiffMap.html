@@ -22,7 +22,12 @@
       display: flex; justify-content: space-between; align-items: center;
     }
     .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+    .btn-back-dash { text-decoration: none; color: #38bdf8; font-size: 1.1rem; padding-right: 4px; display: flex; align-items: center; }
     .user-avatar-mini { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #06c755; object-fit: cover; }
+    .room-badge-pill {
+      background: #1e293b; border: 1px solid #38bdf8; color: #38bdf8;
+      font-size: 0.65rem; padding: 2px 6px; border-radius: 8px; font-weight: bold;
+    }
 
     .fab-group { position: absolute; right: 12px; top: 65px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
     .btn-fab {
@@ -145,8 +150,10 @@
 
   <div class="top-bar">
     <div class="user-profile-badge">
+      <a href="dashboard.html" class="btn-back-dash" title="กลับหน้า Dashboard">◀</a>
       <img id="myAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" referrerpolicy="no-referrer" class="user-avatar-mini">
       <span id="myNameText">กำลังเชื่อมต่อ...</span>
+      <span class="room-badge-pill" id="roomBadge">...</span>
     </div>
     <div style="font-size:0.75rem; color:#06c755; font-weight:bold;">
       <span id="gpsStatus">📡 รอพิกัด...</span>
@@ -190,6 +197,10 @@
   <script>
     const MY_LIFF_ID = "2012010620-7LrsLOGx";
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
+
+    // 🔥 1. ระบบกุญแจห้องอัตโนมัติ (ดึงจาก URL เช่น ?room=ROOM-9428 ถ้าไม่มีเป็น default)
+    const currentRoomId = new URLSearchParams(window.location.search).get('room') || 'default';
+    document.getElementById("roomBadge").textContent = currentRoomId;
 
     let myUserId = "", myName = "", myAvatar = "";
     let myLat = 13.7563, myLng = 100.5018;
@@ -298,11 +309,12 @@
       }
     }
 
-    // 🚀 SYNC ทั้งพิกัดและแชทสด
+    // 🔥 2. SYNC แยกห้องขาดจากกัน 100% (ส่ง roomId ไปด้วยเสมอ)
     async function syncSquadLocation(pendingTarget, chatMessage) {
       if (!hasGps || !isAuthed || !myUserId || !BACKEND_URL) return;
       try {
         const payload = {
+          roomId: currentRoomId, // 🔥 กุญแจแยกห้อง
           userId: myUserId,
           name: myName,
           avatar: myAvatar,
@@ -517,11 +529,12 @@
       syncSquadLocation(newTarget);
     });
 
+    // 🔥 แชร์ลิงก์เฉพาะห้องนี้
     document.getElementById("btnShareLine").onclick = () => {
-      const shareUrl = "https://liff.line.me/" + MY_LIFF_ID;
+      const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${currentRoomId}`;
       if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
         liff.shareTargetPicker([
-          { type: "text", text: `🗺️ แผนที่พิกัดแก๊งสด & แชทสด:\n${shareUrl}` }
+          { type: "text", text: `🗺️ แผนที่พิกัดแก๊งสด [ห้อง: ${currentRoomId}]:\n${shareUrl}` }
         ]);
       } else {
         alert("คัดลอกลิงก์ส่งเข้า LINE กลุ่มได้เลย:\n" + shareUrl);
@@ -529,20 +542,17 @@
     };
 
     document.getElementById("btnClearGhosts").onclick = async () => {
-      if (confirm("ต้องการล้างหมุดผีและข้อความแชททั้งหมดใช่หรือไม่?")) {
+      if (confirm(`ต้องการล้างหมุดผีและแชทของห้อง [${currentRoomId}] ใช่หรือไม่?`)) {
         await fetch(BACKEND_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'clear' })
+          body: JSON.stringify({ action: 'clear', roomId: currentRoomId })
         });
-        alert("✅ ล้างระบบเกลี้ยงแล้ว!");
+        alert("✅ ล้างห้องนี้เกลี้ยงแล้ว!");
         location.reload();
       }
     };
 
-    // ==========================================================================
-    // 💬 จัดการระบบ LIVE CHAT
-    // ==========================================================================
     const chatDrawer = document.getElementById("chatDrawer");
     document.getElementById("btnToggleChat").onclick = () => {
       isChatOpen = !isChatOpen;
@@ -563,7 +573,7 @@
       if (!msg) return;
 
       input.value = "";
-      renderMyMarker(myLat, myLng, true, msg); // โชว์บอลลูนบนหัวหมุดตัวเองทันที
+      renderMyMarker(myLat, myLng, true, msg);
       await syncSquadLocation(null, msg);
     }
 
