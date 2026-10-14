@@ -8,15 +8,15 @@
   <!-- 1. LINE LIFF SDK 2.x -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-  <!-- 2. Leaflet Map -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- 2. Leaflet Map (Cloudflare CDN โหลดไว ไม่โดนบล็อก) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
     body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0f19; color: #fff; }
-    #map { width: 100%; height: 100%; z-index: 1; }
+    #map { width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1; background: #0b0f19; }
 
     .top-bar {
       position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1000;
@@ -163,38 +163,19 @@
       background: #38bdf8; color: #0f172a; border: none; border-radius: 20px;
       padding: 8px 16px; font-weight: bold; cursor: pointer;
     }
-
-    /* ม่านล็อกอิน */
-    #loginGate {
-      position: fixed; inset: 0; background: #0b0f19; z-index: 9999;
-      display: none; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px; text-align: center;
-    }
-    .btn-login {
-      background: #06c755; color: #fff; border: none; padding: 12px 24px;
-      border-radius: 24px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 16px;
-    }
   </style>
 </head>
 <body>
-
-  <!-- ม่านล็อกอิน (ซ่อนเป็นค่าเริ่มต้น ไม่ค้างแน่นอน!) -->
-  <div id="loginGate">
-    <h2>📍 อยู่ไหน (YooNhai Live)</h2>
-    <p style="color:#94a3b8; font-size:0.85rem; margin-top:8px;">กรุณาเข้าสู่ระบบด้วย LINE เพื่อเริ่มซิงก์พิกัดแก๊งสด</p>
-    <button class="btn-login" onclick="liff.login()">เข้าสู่ระบบผ่าน LINE</button>
-    <button style="margin-top:12px; background:transparent; border:none; color:#38bdf8; font-size:0.8rem; cursor:pointer;" onclick="bypassLogin()">หรือ เข้าดูแผนที่ทันที</button>
-  </div>
 
   <div class="top-bar">
     <div class="user-profile-badge">
       <a href="dashboard.html" class="btn-back-dash" title="กลับหน้า Dashboard">◀</a>
       <img id="myAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" referrerpolicy="no-referrer" class="user-avatar-mini">
-      <span id="myNameText">กำลังเชื่อมต่อ...</span>
+      <span id="myNameText">สหาย</span>
       <span class="room-badge-pill" id="roomBadge">...</span>
     </div>
     <div style="font-size:0.75rem; color:#06c755; font-weight:bold;">
-      <span id="gpsStatus">📡 รอพิกัด...</span>
+      <span id="gpsStatus">📡 กำลังหาดาวเทียม...</span>
     </div>
   </div>
 
@@ -248,32 +229,43 @@
     const currentRoomId = new URLSearchParams(window.location.search).get('room') || 'default';
     document.getElementById("roomBadge").textContent = currentRoomId;
 
-    let myUserId = localStorage.getItem("SQUAD_UID") || "";
-    let myName = localStorage.getItem("SQUAD_UNAME") || "สหาย";
+    let myUserId = localStorage.getItem("SQUAD_UID") || ("U_" + Date.now().toString().slice(-6));
+    localStorage.setItem("SQUAD_UID", myUserId);
+
+    let myName = localStorage.getItem("SQUAD_UNAME") || "สหาย_" + myUserId.slice(-4);
     let myAvatar = localStorage.getItem("SQUAD_UAVATAR") || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
+    document.getElementById("myNameText").textContent = myName;
+    document.getElementById("myAvatarImg").src = myAvatar;
+
     let myLat = 13.7563, myLng = 100.5018;
-    let hasGps = false, isTargetMode = false, isAuthed = false, autoFollow = true;
+    let hasGps = false, isTargetMode = false, autoFollow = true;
     let markers = {}, targetMarker = null, currentTarget = null;
     let accuracyCircle = null;
     let lastChatCount = 0, isChatOpen = false;
 
+    // 🔥 1. เริ่มต้นแผนที่ (ใช้ CartoDB Voyager โหลดฉลุย ไม่มีจอดำ!)
     const map = L.map('map', { zoomControl: false }).setView([myLat, myLng], 17);
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 20,
+      subdomains: 'abcd',
+      attribution: '© CartoDB'
     }).addTo(map);
+
+    // บังคับเรนเดอร์ขนาดแผนที่ทันที ป้องกันบั๊กจอดำ
+    setTimeout(() => { map.invalidateSize(); }, 300);
 
     function openGoogleMapsNav(destLat, destLng) {
       window.open(`https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLng}&destination=${destLat},${destLng}&travelmode=driving`, '_blank');
     }
 
-    // 🛡️ ป้องกันการค้างหน้าจอ 100% (Anti-Freeze Fail-Safe)
-    async function initStrictLiff() {
+    // 🔥 2. ระบบเชื่อมต่อ LINE แบบมี Timeout (2 วินาทีตัดจบ ไม่ค้างเติ่งเด็ดขาด!)
+    async function initFastLiff() {
       try {
-        await liff.init({ liffId: MY_LIFF_ID });
-        
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
+        await Promise.race([liff.init({ liffId: MY_LIFF_ID }), timeoutPromise]);
+
         if (liff.isLoggedIn()) {
           try {
             const profile = await liff.getProfile();
@@ -281,7 +273,6 @@
             myName = profile.displayName;
             myAvatar = profile.pictureUrl || myAvatar;
           } catch (pe) {
-            console.warn("Profile fetch fallback:", pe);
             const idToken = liff.getDecodedIDToken();
             if (idToken) {
               myUserId = idToken.sub || myUserId;
@@ -289,52 +280,26 @@
               myAvatar = idToken.picture || myAvatar;
             }
           }
-          finishAuth();
-        } else {
-          // ถ้าเปิดในแอป LINE ให้สั่ง login อัตโนมัติทันที
-          if (liff.isInClient()) {
-            liff.login();
-          } else {
-            // ถ้าอยู่นอก LINE และมี session เดิม ให้ผ่านไปเลย
-            if (myUserId) finishAuth();
-            else document.getElementById("loginGate").style.display = "flex";
-          }
+
+          localStorage.setItem("SQUAD_UID", myUserId);
+          localStorage.setItem("SQUAD_UNAME", myName);
+          localStorage.setItem("SQUAD_UAVATAR", myAvatar);
+
+          document.getElementById("myNameText").textContent = myName;
+          document.getElementById("myAvatarImg").src = myAvatar;
         }
       } catch (err) {
-        console.warn("Brave/External browser bypass:", err);
-        finishAuth(); // 🔥 ปลดม่านดำทันที ไม่ปล่อยให้ค้าง!
+        console.warn("Fast Liff bypass:", err);
       }
-    }
-    initStrictLiff();
-
-    function finishAuth() {
-      if (!myUserId) {
-        myUserId = localStorage.getItem("SQUAD_UID") || ("U_" + Date.now().toString().slice(-6));
-      }
-      localStorage.setItem("SQUAD_UID", myUserId);
-      localStorage.setItem("SQUAD_UNAME", myName);
-      localStorage.setItem("SQUAD_UAVATAR", myAvatar);
-
-      document.getElementById("myNameText").textContent = myName;
-      document.getElementById("myAvatarImg").src = myAvatar;
-      document.getElementById("loginGate").style.display = "none";
-      isAuthed = true;
 
       if (hasGps) {
         renderMyMarker(myLat, myLng, true);
         syncSquadLocation();
       }
     }
-
-    window.bypassLogin = () => {
-      let n = prompt("ใส่ชื่อเล่นของคุณ:") || "เพื่อน_สหาย";
-      myName = n;
-      finishAuth();
-    };
+    initFastLiff();
 
     function renderMyMarker(lat, lng, forceUpdate = false, bubbleText = '') {
-      if (!isAuthed || !myUserId) return;
-
       const bubbleHtml = bubbleText ? `<div class="speech-bubble">💬 ${bubbleText}</div>` : '';
       const pinHtml = `
         <div class="line-user-pin">
@@ -395,7 +360,7 @@
     }
 
     async function syncSquadLocation(pendingTarget, chatMessage) {
-      if (!hasGps || !isAuthed || !myUserId || !BACKEND_URL) return;
+      if (!hasGps || !BACKEND_URL) return;
       try {
         const payload = {
           roomId: currentRoomId,
@@ -495,6 +460,7 @@
       });
     }
 
+    // 📡 ดักจับ GPS
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition((pos) => {
         myLat = pos.coords.latitude;
@@ -502,7 +468,11 @@
         document.getElementById("gpsStatus").textContent = "● GPS สด (" + Math.round(pos.coords.accuracy) + "ม.)";
         document.getElementById("gpsStatus").style.color = "#06c755";
 
-        hasGps = true;
+        if (!hasGps) {
+          hasGps = true;
+          map.setView([myLat, myLng], 17);
+          map.invalidateSize();
+        }
         renderMyMarker(myLat, myLng);
 
         if (autoFollow) {
@@ -511,7 +481,7 @@
 
         syncSquadLocation();
       }, (err) => {
-        document.getElementById("gpsStatus").textContent = "⚠️ สัญญาณหลุด";
+        document.getElementById("gpsStatus").textContent = "⚠️ ไม่เปิด GPS";
         document.getElementById("gpsStatus").style.color = "#ef4444";
       }, {
         enableHighAccuracy: true,
@@ -595,7 +565,7 @@
       document.getElementById("btnFollowMe").classList.remove("active");
     });
 
-    // 🚩 ค้นหาสถานที่จุดนัดพบ
+    // 🚩 ค้นหาสถานที่
     const searchTargetBox = document.getElementById("searchTargetBox");
     const searchTargetInput = document.getElementById("searchTargetInput");
     const searchResultsList = document.getElementById("searchResultsList");
@@ -668,7 +638,7 @@
       const newTarget = { name: placeName, lat: lat, lng: lng, by: myName };
       renderTarget(newTarget);
       syncSquadLocation(newTarget);
-      alert(`✅ ปักหมุดจุดนัดพบที่ [${placeName}] เรียบร้อยแล้ว! เพื่อนทุกคนจะเห็นธงนี้ทันที`);
+      alert(`✅ ปักหมุดจุดนัดพบที่ [${placeName}] เรียบร้อยแล้ว!`);
     }
 
     document.getElementById("btnManualPickTip").onclick = () => {
@@ -713,6 +683,7 @@
       }
     };
 
+    // แชทสด
     const chatDrawer = document.getElementById("chatDrawer");
     document.getElementById("btnToggleChat").onclick = () => {
       isChatOpen = !isChatOpen;
