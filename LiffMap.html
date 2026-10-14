@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🗺️ LINE SQUAD LIVE MAP // แผนที่แก๊งสด</title>
 
-  <!-- 1. LINE LIFF SDK 2.x -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
-  <!-- 2. Leaflet Map -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
@@ -18,7 +15,6 @@
     body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0f19; color: #fff; }
     #map { width: 100%; height: 100%; z-index: 1; }
 
-    /* บาร์ด้านบน */
     .top-bar {
       position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1000;
       background: rgba(15, 23, 42, 0.92); border: 1px solid #334155;
@@ -28,38 +24,52 @@
     .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
     .user-avatar-mini { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #06c755; object-fit: cover; }
 
-    /* ปุ่มลอย */
     .fab-group { position: absolute; right: 12px; top: 65px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
     .btn-fab {
       width: 44px; height: 44px; border-radius: 50%; border: 1px solid #475569;
       background: #1e293b; color: #fff; font-size: 1.2rem; cursor: pointer;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+      position: relative;
     }
-    .btn-fab.active { background: #ef4444; border-color: #fff; }
+    .btn-fab.active { background: #06c755; border-color: #fff; }
 
-    /* แดชบอร์ดล่าง */
+    .chat-badge {
+      position: absolute; top: -2px; right: -2px; background: #ef4444; color: #fff;
+      font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; display: none;
+    }
+
     .bottom-panel {
       position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
       background: rgba(15, 23, 42, 0.95); border-top: 1px solid #334155;
-      padding: 10px 14px; border-radius: 16px 16px 0 0; max-height: 200px;
+      padding: 10px 14px; border-radius: 16px 16px 0 0; max-height: 220px;
     }
     .target-box {
       background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444;
-      border-radius: 8px; padding: 6px 10px; font-size: 0.8rem; margin-bottom: 6px;
-      display: flex; justify-content: space-between; align-items: center;
+      border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; margin-bottom: 8px;
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
     }
     .member-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
     .member-card {
       background: #1e293b; border: 1px solid #334155; border-radius: 8px;
-      padding: 6px 8px; min-width: 130px; font-size: 0.72rem; flex-shrink: 0;
-      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      padding: 6px 10px; min-width: 140px; font-size: 0.72rem; flex-shrink: 0;
+      display: flex; align-items: center; gap: 8px; cursor: pointer;
     }
     .member-card.is-me { border-color: #06c755; background: rgba(6, 199, 85, 0.15); }
     .member-card.is-friend { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
-    .member-card-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+    .member-card-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 
-    /* หมุดบนแผนที่ */
-    .line-user-pin { text-align: center; }
+    /* หมุดและบอลลูนคำพูด */
+    .line-user-pin { text-align: center; position: relative; }
+    .speech-bubble {
+      position: absolute; bottom: 58px; left: 50%; transform: translateX(-50%);
+      background: #0f172a; color: #38bdf8; border: 1.5px solid #38bdf8;
+      padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold;
+      white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.5); pointer-events: none;
+    }
+    .speech-bubble::after {
+      content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      border: 5px solid transparent; border-top-color: #38bdf8;
+    }
     .pin-img {
       width: 44px; height: 44px; border-radius: 50%; border: 3px solid #06c755;
       box-shadow: 0 0 14px rgba(6,199,85,0.9); object-fit: cover; background: #000;
@@ -70,65 +80,136 @@
       padding: 2px 6px; border-radius: 8px; border: 1px solid #06c755; white-space: nowrap;
     }
     .pin-name.friend-name { border-color: #38bdf8; }
+
+    .nav-popup { text-align: center; color: #1e293b; padding: 4px; }
+    .nav-btn {
+      display: inline-block; margin-top: 6px; background: #2563eb; color: #fff !important;
+      padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.75rem; font-weight: bold;
+    }
+
+    /* กล่องหน้าต่างแชทสด */
+    #chatDrawer {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 380px; z-index: 2000;
+      background: #0f172a; border-top: 2px solid #38bdf8; border-radius: 20px 20px 0 0;
+      display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s ease;
+      box-shadow: 0 -10px 25px rgba(0,0,0,0.8);
+    }
+    #chatDrawer.open { transform: translateY(0); }
+    .chat-header {
+      padding: 12px 16px; border-bottom: 1px solid #334155; display: flex;
+      justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.9rem;
+    }
+    .chat-messages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .chat-bubble {
+      display: flex; gap: 8px; max-width: 85%; align-items: flex-start; font-size: 0.8rem;
+    }
+    .chat-bubble.mine { align-self: flex-end; flex-direction: row-reverse; }
+    .chat-bubble-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+    .chat-bubble-text {
+      background: #1e293b; border: 1px solid #334155; padding: 6px 10px; border-radius: 12px;
+      color: #f1f5f9; word-break: break-word;
+    }
+    .chat-bubble.mine .chat-bubble-text { background: #06c755; color: #fff; border: none; }
+    .chat-time { font-size: 0.6rem; color: #64748b; margin-top: 2px; }
+
+    .chat-input-bar {
+      padding: 10px 14px; border-top: 1px solid #334155; display: flex; gap: 8px; background: #0b0f19;
+    }
+    .chat-input {
+      flex: 1; background: #1e293b; border: 1px solid #475569; border-radius: 20px;
+      padding: 8px 14px; color: #fff; font-size: 0.85rem; outline: none;
+    }
+    .btn-send {
+      background: #38bdf8; color: #0f172a; border: none; border-radius: 20px;
+      padding: 8px 16px; font-weight: bold; cursor: pointer;
+    }
+
+    #loginGate {
+      position: fixed; inset: 0; background: #0b0f19; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; text-align: center;
+    }
+    .btn-login {
+      background: #06c755; color: #fff; border: none; padding: 12px 24px;
+      border-radius: 24px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 16px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- บาร์บน -->
+  <div id="loginGate">
+    <h2>🗺️ แผนที่พิกัดแก๊งสด</h2>
+    <p style="color:#94a3b8; font-size:0.85rem; margin-top:8px;">กรุณาเข้าสู่ระบบด้วย LINE เพื่อเริ่มซิงก์พิกัดและแชทสด</p>
+    <button class="btn-login" onclick="liff.login()">เข้าสู่ระบบผ่าน LINE</button>
+  </div>
+
   <div class="top-bar">
     <div class="user-profile-badge">
       <img id="myAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" referrerpolicy="no-referrer" class="user-avatar-mini">
-      <span id="myNameText">กำลังเชื่อมต่อ LINE...</span>
+      <span id="myNameText">กำลังเชื่อมต่อ...</span>
     </div>
     <div style="font-size:0.75rem; color:#06c755; font-weight:bold;">
       <span id="gpsStatus">📡 รอพิกัด...</span>
     </div>
   </div>
 
-  <!-- ปุ่มควบคุม -->
   <div class="fab-group">
-    <button class="btn-fab" id="btnMyLoc" title="พิกัดของฉัน">📍</button>
+    <button class="btn-fab" id="btnToggleChat" title="เปิดห้องแชทสด">
+      💬<span class="chat-badge" id="chatBadge">0</span>
+    </button>
+    <button class="btn-fab active" id="btnFollowMe" title="ล็อกมุมกล้องตามตัว">🎯</button>
+    <button class="btn-fab" id="btnMyLoc" title="ดึงพิกัดปัจจุบัน">📍</button>
     <button class="btn-fab" id="btnSetTarget" title="ปักหมุดจุดนัดพบ">🚩</button>
     <button class="btn-fab" id="btnShareLine" title="แชร์เข้ากลุ่ม LINE">📤</button>
+    <button class="btn-fab" id="btnClearGhosts" title="ล้างหมุดผีทิ้ง" style="background:#7f1d1d; border-color:#ef4444;">🧹</button>
   </div>
 
-  <!-- แผนที่ -->
   <div id="map"></div>
 
-  <!-- รายชื่อแก๊งล่าง -->
+  <!-- กล่องแชทสด -->
+  <div id="chatDrawer">
+    <div class="chat-header">
+      <span>💬 แชทแก๊งสด (Live Chat)</span>
+      <span style="cursor:pointer; font-size:1.2rem;" id="btnCloseChat">✕</span>
+    </div>
+    <div class="chat-messages" id="chatFeed"></div>
+    <div class="chat-input-bar">
+      <input type="text" class="chat-input" id="chatInput" placeholder="พิมพ์ข้อความในแก๊ง..." maxlength="150">
+      <button class="btn-send" id="btnSendMsg">ส่ง</button>
+    </div>
+  </div>
+
   <div class="bottom-panel">
-    <div class="target-box">
+    <div class="target-box" id="targetBox">
       <div><b>🚩 นัดพบ:</b> <span id="targetNameDisplay">ยังไม่ได้กำหนด</span></div>
-      <span style="font-size:0.7rem; color:#cbd5e1;">(กด 🚩 เพื่อปักหมุด)</span>
+      <div id="targetActionText" style="font-size:0.72rem; color:#38bdf8; font-weight:bold;">(แตะเพื่อปักหมุด)</div>
     </div>
     <div class="member-scroll" id="memberList"></div>
   </div>
 
   <script>
     const MY_LIFF_ID = "2012010620-7LrsLOGx";
-    
-    // 🔥 ใส่ Web App URL ของมึงเรียบร้อยแล้ว!
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
 
-    let myUserId = localStorage.getItem("SQUAD_UID") || "";
-    let myName = localStorage.getItem("SQUAD_UNAME") || "กำลังโหลด...";
-    let myAvatar = localStorage.getItem("SQUAD_UAVATAR") || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-
+    let myUserId = "", myName = "", myAvatar = "";
     let myLat = 13.7563, myLng = 100.5018;
-    let hasGps = false, isTargetMode = false, isProfileReady = false;
+    let hasGps = false, isTargetMode = false, isAuthed = false, autoFollow = true;
     let markers = {}, targetMarker = null, currentTarget = null;
+    let accuracyCircle = null;
+    let lastChatCount = 0, isChatOpen = false;
 
-    const map = L.map('map', { zoomControl: false }).setView([myLat, myLng], 14);
+    const map = L.map('map', { zoomControl: false }).setView([myLat, myLng], 17);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
+      attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // ==========================================================================
-    // 1. บังคับล็อกอินผ่าน LINE ดึงรูปและชื่อโปรไฟล์จริง 100%
-    // ==========================================================================
-    async function initLineLiff() {
+    function openGoogleMapsNav(destLat, destLng) {
+      window.open(`https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLng}&destination=${destLat},${destLng}&travelmode=driving`, '_blank');
+    }
+
+    async function initStrictLiff() {
       try {
         await liff.init({ liffId: MY_LIFF_ID });
         if (liff.isLoggedIn()) {
@@ -137,46 +218,33 @@
           myName = profile.displayName;
           myAvatar = profile.pictureUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-          localStorage.setItem("SQUAD_UID", myUserId);
-          localStorage.setItem("SQUAD_UNAME", myName);
-          localStorage.setItem("SQUAD_UAVATAR", myAvatar);
-
           document.getElementById("myNameText").textContent = myName;
           document.getElementById("myAvatarImg").src = myAvatar;
+          document.getElementById("loginGate").style.display = "none";
+          isAuthed = true;
 
-          isProfileReady = true;
-
-          // ถ้า GPS มาแล้ว ให้รีเฟรชหมุดตัวเองเป็นรูปจริงทันที
           if (hasGps) {
             renderMyMarker(myLat, myLng, true);
             syncSquadLocation();
           }
         } else {
-          // ถ้ายังไม่ได้ล็อกอิน ให้เด้งไปหน้าล็อกอิน LINE ทันที
-          liff.login();
+          document.getElementById("loginGate").style.display = "flex";
         }
       } catch (err) {
-        console.warn("LIFF Error:", err);
-        // Fallback กรณีทดสอบบนเบราว์เซอร์ธรรมดานอก LINE
-        let fallbackName = localStorage.getItem("SQUAD_UNAME") || prompt("ใส่ชื่อเล่นของคุณ:") || "เพื่อน_สหาย";
-        myUserId = myUserId || ("U_TEMP_" + Date.now().toString().slice(-5));
-        myName = fallbackName;
-        document.getElementById("myNameText").textContent = myName;
-        isProfileReady = true;
+        console.error("LIFF Error:", err);
       }
     }
-    initLineLiff();
+    initStrictLiff();
 
-    // ==========================================================================
-    // 2. ปักหมุดรูปโปรไฟล์ตัวเอง (ขอบเขียว)
-    // ==========================================================================
-    function renderMyMarker(lat, lng, forceUpdateIcon = false) {
-      if (!isProfileReady) return;
+    function renderMyMarker(lat, lng, forceUpdate = false, bubbleText = '') {
+      if (!isAuthed || !myUserId) return;
 
+      const bubbleHtml = bubbleText ? `<div class="speech-bubble">💬 ${bubbleText}</div>` : '';
       const pinHtml = `
         <div class="line-user-pin">
+          ${bubbleHtml}
           <span class="pin-name">${myName} (ฉัน)</span><br>
-          <img src="${myAvatar}" referrerpolicy="no-referrer" class="pin-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+          <img src="${myAvatar}" referrerpolicy="no-referrer" class="pin-img">
         </div>`;
 
       if (!markers[myUserId]) {
@@ -186,38 +254,53 @@
         }).addTo(map);
       } else {
         markers[myUserId].setLatLng([lat, lng]);
-        if (forceUpdateIcon) {
+        if (forceUpdate || bubbleText) {
           markers[myUserId].setIcon(L.divIcon({ html: pinHtml, className: '', iconSize: [44, 55], iconAnchor: [22, 50] }));
         }
       }
+
+      if (!accuracyCircle) {
+        accuracyCircle = L.circle([lat, lng], { radius: 15, color: '#06c755', fillOpacity: 0.15 }).addTo(map);
+      } else {
+        accuracyCircle.setLatLng([lat, lng]);
+      }
     }
 
-    // ==========================================================================
-    // 3. ปักหมุดรูปโปรไฟล์เพื่อนในแก๊ง (ขอบฟ้า)
-    // ==========================================================================
     function renderFriendMarker(member) {
       const uid = member.userId;
+      const hasRecentMsg = member.lastMsg && (Date.now() - member.lastMsgTime < 15000);
+      const bubbleHtml = hasRecentMsg ? `<div class="speech-bubble">💬 ${member.lastMsg}</div>` : '';
+
       const pinHtml = `
         <div class="line-user-pin">
+          ${bubbleHtml}
           <span class="pin-name friend-name">${member.name}</span><br>
-          <img src="${member.avatar}" referrerpolicy="no-referrer" class="pin-img friend-pin" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+          <img src="${member.avatar}" referrerpolicy="no-referrer" class="pin-img friend-pin">
+        </div>`;
+
+      const popupContent = `
+        <div class="nav-popup">
+          <b>${member.name}</b><br>
+          <span style="font-size:0.75rem; color:#64748b;">ห่าง: ${getDistanceText(myLat, myLng, member.lat, member.lng)}</span><br>
+          <a href="javascript:void(0)" onclick="openGoogleMapsNav(${member.lat}, ${member.lng})" class="nav-btn">
+            🚗 นำทางด้วย Google Maps
+          </a>
         </div>`;
 
       if (!markers[uid]) {
         markers[uid] = L.marker([member.lat, member.lng], {
           icon: L.divIcon({ html: pinHtml, className: '', iconSize: [44, 55], iconAnchor: [22, 50] })
-        }).addTo(map);
+        }).addTo(map).bindPopup(popupContent);
       } else {
         markers[uid].setLatLng([member.lat, member.lng]);
         markers[uid].setIcon(L.divIcon({ html: pinHtml, className: '', iconSize: [44, 55], iconAnchor: [22, 50] }));
+        markers[uid].setPopupContent(popupContent);
       }
     }
 
-    // ==========================================================================
-    // 4. SYNC พิกัดกับ BACKEND GOOGLE APPS SCRIPT
-    // ==========================================================================
-    async function syncSquadLocation(pendingTarget) {
-      if (!hasGps || !isProfileReady || !BACKEND_URL) return;
+    // 🚀 SYNC ทั้งพิกัดและแชทสด
+    async function syncSquadLocation(pendingTarget, chatMessage) {
+      if (!hasGps || !isAuthed || !myUserId || !BACKEND_URL) return;
       try {
         const payload = {
           userId: myUserId,
@@ -227,91 +310,123 @@
           lng: myLng
         };
         if (pendingTarget) payload.setTarget = pendingTarget;
+        if (chatMessage) payload.chatMsg = chatMessage;
 
         const res = await fetch(BACKEND_URL, {
           method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
         const data = await res.json();
 
-        if (data && data.members) {
-          updateRosterAndMap(data.members);
-        }
-        if (data && data.target) {
-          renderTarget(data.target);
-        }
+        if (data && data.members) updateRosterAndMap(data.members);
+        if (data && data.target) renderTarget(data.target);
+        if (data && data.chat) updateChatFeed(data.chat);
       } catch (e) {
         console.warn("Sync error:", e);
       }
+    }
+
+    function updateChatFeed(messages) {
+      const feed = document.getElementById("chatFeed");
+      feed.innerHTML = "";
+      messages.forEach(m => {
+        const isMine = m.userId === myUserId;
+        const row = document.createElement("div");
+        row.className = `chat-bubble ${isMine ? 'mine' : ''}`;
+        row.innerHTML = `
+          <img src="${m.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="chat-bubble-avatar" referrerpolicy="no-referrer">
+          <div>
+            <div style="font-size:0.68rem; color:#94a3b8;">${m.name}</div>
+            <div class="chat-bubble-text">${m.text}</div>
+            <div class="chat-time">${m.time}</div>
+          </div>`;
+        feed.appendChild(row);
+      });
+      feed.scrollTop = feed.scrollHeight;
+
+      if (!isChatOpen && messages.length > lastChatCount) {
+        document.getElementById("chatBadge").style.display = "block";
+        document.getElementById("chatBadge").textContent = (messages.length - lastChatCount);
+      }
+      lastChatCount = messages.length;
+    }
+
+    function getDistanceText(lat1, lon1, lat2, lon2) {
+      if (!lat1 || !lat2) return "-";
+      const d = getDistance(lat1, lon1, lat2, lon2);
+      return d < 1 ? (d * 1000).toFixed(0) + " ม." : d.toFixed(1) + " กม.";
     }
 
     function updateRosterAndMap(membersList) {
       const listEl = document.getElementById("memberList");
       listEl.innerHTML = "";
 
-      // 1. หมุดและการ์ดของตัวเอง
       renderMyMarker(myLat, myLng);
-      let myDist = currentTarget ? getDistance(myLat, myLng, currentTarget.lat, currentTarget.lng) : null;
-      let myDistText = myDist ? (myDist < 1 ? (myDist * 1000).toFixed(0) + " ม." : myDist.toFixed(1) + " กม.") : "-";
+      let myDistText = currentTarget ? getDistanceText(myLat, myLng, currentTarget.lat, currentTarget.lng) : "-";
 
       const myCard = document.createElement("div");
       myCard.className = "member-card is-me";
-      myCard.onclick = () => map.setView([myLat, myLng], 16);
+      myCard.onclick = () => { autoFollow = true; map.setView([myLat, myLng], 17); };
       myCard.innerHTML = `
         <img src="${myAvatar}" referrerpolicy="no-referrer" class="member-card-img">
         <div>
           <div><b>${myName}</b> (ฉัน)</div>
-          <div style="color:#06c755; font-size:0.65rem;">🎯 ${myDistText}</div>
+          <div style="color:#06c755; font-size:0.65rem;">🎯 นัดพบ: ${myDistText}</div>
         </div>`;
       listEl.appendChild(myCard);
 
-      // 2. หมุดและการ์ดของเพื่อนทุกคน
       membersList.forEach(m => {
         if (m.userId === myUserId) return;
         renderFriendMarker(m);
 
-        let dist = currentTarget ? getDistance(m.lat, m.lng, currentTarget.lat, currentTarget.lng) : null;
-        let distText = dist ? (dist < 1 ? (dist * 1000).toFixed(0) + " ม." : dist.toFixed(1) + " กม.") : "-";
-
+        let distToMe = getDistanceText(myLat, myLng, m.lat, m.lng);
         const card = document.createElement("div");
         card.className = "member-card is-friend";
-        card.onclick = () => map.setView([m.lat, m.lng], 16);
+        card.onclick = () => {
+          autoFollow = false;
+          document.getElementById("btnFollowMe").classList.remove("active");
+          map.setView([m.lat, m.lng], 17);
+          markers[m.userId].openPopup();
+        };
         card.innerHTML = `
           <img src="${m.avatar}" referrerpolicy="no-referrer" class="member-card-img">
           <div>
             <div><b>${m.name}</b></div>
-            <div style="color:#38bdf8; font-size:0.65rem;">🎯 ${distText}</div>
+            <div style="color:#38bdf8; font-size:0.65rem;">📍 ห่าง ${distToMe}</div>
           </div>`;
         listEl.appendChild(card);
       });
     }
 
-    // ==========================================================================
-    // 5. GPS WATCHER
-    // ==========================================================================
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition((pos) => {
         myLat = pos.coords.latitude;
         myLng = pos.coords.longitude;
-        document.getElementById("gpsStatus").textContent = "● GPS สดพร้อม";
+        document.getElementById("gpsStatus").textContent = "● GPS สด (" + Math.round(pos.coords.accuracy) + "ม.)";
         document.getElementById("gpsStatus").style.color = "#06c755";
 
-        if (!hasGps) {
-          hasGps = true;
-          map.setView([myLat, myLng], 16);
-        }
+        hasGps = true;
         renderMyMarker(myLat, myLng);
+
+        if (autoFollow) {
+          map.panTo([myLat, myLng], { animate: true, duration: 0.5 });
+        }
+
         syncSquadLocation();
       }, (err) => {
-        document.getElementById("gpsStatus").textContent = "⚠️ ไม่เปิด GPS";
+        document.getElementById("gpsStatus").textContent = "⚠️ สัญญาณหลุด";
         document.getElementById("gpsStatus").style.color = "#ef4444";
-      }, { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 });
+      }, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 6000
+      });
     }
 
-    // วนลูปดูดพิกัดเพื่อนทุก 4 วินาที
     setInterval(() => {
       syncSquadLocation();
-    }, 4000);
+    }, 3000);
 
     function getDistance(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -326,29 +441,68 @@
     function renderTarget(t) {
       currentTarget = t;
       const label = document.getElementById("targetNameDisplay");
+      const actionText = document.getElementById("targetActionText");
+
       if (!t || !t.lat) {
         label.textContent = "ยังไม่ได้กำหนด";
+        actionText.textContent = "(กด 🚩 เพื่อปักหมุด)";
+        actionText.style.color = "#cbd5e1";
         if (targetMarker) map.removeLayer(targetMarker);
         return;
       }
-      label.textContent = `${t.name} (โดย: ${t.by})`;
+
+      let distText = getDistanceText(myLat, myLng, t.lat, t.lng);
+      label.textContent = `${t.name} (${distText})`;
+      actionText.textContent = "🚗 แตะนำทาง Google Maps";
+      actionText.style.color = "#22c55e";
+
+      const popupTarget = `
+        <div class="nav-popup">
+          <b>🚩 จุดนัดพบ: ${t.name}</b><br>
+          <span style="font-size:0.75rem; color:#64748b;">โดย: ${t.by} (ห่าง ${distText})</span><br>
+          <a href="javascript:void(0)" onclick="openGoogleMapsNav(${t.lat}, ${t.lng})" class="nav-btn" style="background:#ef4444;">
+            🚗 นำทางไปจุดนัดพบ
+          </a>
+        </div>`;
+
       if (!targetMarker) {
         targetMarker = L.marker([t.lat, t.lng], {
-          icon: L.divIcon({ html: '🚩', className: '', iconSize: [32, 32] })
-        }).addTo(map);
+          icon: L.divIcon({ html: '<span style="font-size:2rem;">🚩</span>', className: '', iconSize: [36, 36], iconAnchor: [18, 30] })
+        }).addTo(map).bindPopup(popupTarget);
       } else {
         targetMarker.setLatLng([t.lat, t.lng]);
+        targetMarker.setPopupContent(popupTarget);
       }
     }
 
-    document.getElementById("btnMyLoc").onclick = () => {
-      if (hasGps) map.setView([myLat, myLng], 16);
+    document.getElementById("targetBox").onclick = () => {
+      if (currentTarget && currentTarget.lat) openGoogleMapsNav(currentTarget.lat, currentTarget.lng);
+      else document.getElementById("btnSetTarget").click();
     };
+
+    document.getElementById("btnFollowMe").onclick = () => {
+      autoFollow = !autoFollow;
+      document.getElementById("btnFollowMe").classList.toggle("active", autoFollow);
+      if (autoFollow && hasGps) map.setView([myLat, myLng], 17);
+    };
+
+    document.getElementById("btnMyLoc").onclick = () => {
+      if (hasGps) {
+        autoFollow = true;
+        document.getElementById("btnFollowMe").classList.add("active");
+        map.setView([myLat, myLng], 17);
+      }
+    };
+
+    map.on('dragstart', () => {
+      autoFollow = false;
+      document.getElementById("btnFollowMe").classList.remove("active");
+    });
 
     document.getElementById("btnSetTarget").onclick = () => {
       isTargetMode = !isTargetMode;
       document.getElementById("btnSetTarget").classList.toggle("active", isTargetMode);
-      if (isTargetMode) alert("📍 แตะบนแผนที่เพื่อตั้งเป้าหมายนัดพบให้ทุกคนเห็น!");
+      if (isTargetMode) alert("📍 แตะบนแผนที่เพื่อตั้งเป้าหมายนัดพบ!");
     };
 
     map.on('click', (e) => {
@@ -367,12 +521,56 @@
       const shareUrl = "https://liff.line.me/" + MY_LIFF_ID;
       if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
         liff.shareTargetPicker([
-          { type: "text", text: `🗺️ เปิดดูแผนที่พิกัดแก๊งสด & จุดนัดพบรวม:\n${shareUrl}` }
+          { type: "text", text: `🗺️ แผนที่พิกัดแก๊งสด & แชทสด:\n${shareUrl}` }
         ]);
       } else {
         alert("คัดลอกลิงก์ส่งเข้า LINE กลุ่มได้เลย:\n" + shareUrl);
       }
     };
+
+    document.getElementById("btnClearGhosts").onclick = async () => {
+      if (confirm("ต้องการล้างหมุดผีและข้อความแชททั้งหมดใช่หรือไม่?")) {
+        await fetch(BACKEND_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'clear' })
+        });
+        alert("✅ ล้างระบบเกลี้ยงแล้ว!");
+        location.reload();
+      }
+    };
+
+    // ==========================================================================
+    // 💬 จัดการระบบ LIVE CHAT
+    // ==========================================================================
+    const chatDrawer = document.getElementById("chatDrawer");
+    document.getElementById("btnToggleChat").onclick = () => {
+      isChatOpen = !isChatOpen;
+      chatDrawer.classList.toggle("open", isChatOpen);
+      if (isChatOpen) {
+        document.getElementById("chatBadge").style.display = "none";
+        document.getElementById("chatInput").focus();
+      }
+    };
+    document.getElementById("btnCloseChat").onclick = () => {
+      isChatOpen = false;
+      chatDrawer.classList.remove("open");
+    };
+
+    async function sendChatMessage() {
+      const input = document.getElementById("chatInput");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      input.value = "";
+      renderMyMarker(myLat, myLng, true, msg); // โชว์บอลลูนบนหัวหมุดตัวเองทันที
+      await syncSquadLocation(null, msg);
+    }
+
+    document.getElementById("btnSendMsg").onclick = sendChatMessage;
+    document.getElementById("chatInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendChatMessage();
+    });
   </script>
 </body>
 </html>
