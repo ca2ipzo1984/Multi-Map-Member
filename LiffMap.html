@@ -179,4 +179,547 @@
     <div class="user-profile-badge">
       <a href="dashboard.html" class="btn-back-dash" title="กลับหน้า Dashboard">◀</a>
       <!-- 🔥 โลโก้หมุดนีออนของมึงโชว์หราตรงนี้! -->
-      <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCABgAGADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5xpaSlFdZiFKBW1o/hy71
+      <img src="data:image/jpeg;base64,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" class="app-logo-badge" title="โลโก้อยู่ไหน">
+      <img id="myAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" referrerpolicy="no-referrer" class="user-avatar-mini">
+      <span id="myNameText">สหาย</span>
+      <span class="room-badge-pill" id="roomBadge">...</span>
+    </div>
+    <div style="font-size:0.75rem; color:#06c755; font-weight:bold;">
+      <span id="gpsStatus">📡 GPS สดพร้อม</span>
+    </div>
+  </div>
+
+  <div id="searchTargetBox">
+    <div class="search-input-group">
+      <input type="text" class="search-target-input" id="searchTargetInput" placeholder="🔍 พิมพ์ชื่อสถานที่ (เช่น เมอร์รี่คิงส์, สยาม, เซ็นทรัล)...">
+      <button class="btn-search-go" id="btnSearchTargetGo">ค้นหา</button>
+      <button class="btn-search-close" id="btnSearchTargetClose">✕</button>
+    </div>
+    <div class="search-results-list" id="searchResultsList"></div>
+    <div class="search-manual-tip" id="btnManualPickTip">👉 หรือ แตะบนแผนที่เพื่อปักหมุดเอง</div>
+  </div>
+
+  <div class="fab-group">
+    <button class="btn-fab" id="btnToggleChat" title="เปิดห้องแชทสด">
+      💬<span class="chat-badge" id="chatBadge">0</span>
+    </button>
+    <button class="btn-fab active" id="btnFollowMe" title="ล็อกมุมกล้องตามตัว">🎯</button>
+    <button class="btn-fab" id="btnMyLoc" title="ดึงพิกัดปัจจุบัน">📍</button>
+    <button class="btn-fab" id="btnSetTarget" title="ตั้งจุดนัดพบ (ค้นหาสถานที่)">🚩</button>
+    <button class="btn-fab" id="btnShareLine" title="แชร์เข้ากลุ่ม LINE">📤</button>
+    <button class="btn-fab" id="btnClearGhosts" title="ล้างหมุดผีทิ้ง" style="background:#7f1d1d; border-color:#ef4444;">🧹</button>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="chatDrawer">
+    <div class="chat-header">
+      <span>💬 แชทแก๊งสด (Live Chat)</span>
+      <span style="cursor:pointer; font-size:1.2rem;" id="btnCloseChat">✕</span>
+    </div>
+    <div class="chat-messages" id="chatFeed"></div>
+    <div class="chat-input-bar">
+      <input type="text" class="chat-input" id="chatInput" placeholder="พิมพ์ข้อความในแก๊ง..." maxlength="150">
+      <button class="btn-send" id="btnSendMsg">ส่ง</button>
+    </div>
+  </div>
+
+  <div class="bottom-panel">
+    <div class="target-box" id="targetBox">
+      <div><b>🚩 นัดพบ:</b> <span id="targetNameDisplay">ยังไม่ได้กำหนด</span></div>
+      <div id="targetActionText" style="font-size:0.72rem; color:#38bdf8; font-weight:bold;">(แตะเพื่อปักหมุด)</div>
+    </div>
+    <div class="member-scroll" id="memberList"></div>
+  </div>
+
+  <script>
+    const MY_LIFF_ID = "2012010620-7LrsLOGx";
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
+
+    const currentRoomId = new URLSearchParams(window.location.search).get('room') || 'default';
+    document.getElementById("roomBadge").textContent = currentRoomId;
+
+    let myUserId = localStorage.getItem("SQUAD_UID") || ("U_" + Date.now().toString().slice(-6));
+    localStorage.setItem("SQUAD_UID", myUserId);
+
+    let myName = localStorage.getItem("SQUAD_UNAME") || "สหาย_" + myUserId.slice(-4);
+    let myAvatar = localStorage.getItem("SQUAD_UAVATAR") || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+    document.getElementById("myNameText").textContent = myName;
+    document.getElementById("myAvatarImg").src = myAvatar;
+
+    let myLat = 13.7563, myLng = 100.5018;
+    let hasGps = false, isTargetMode = false, autoFollow = true;
+    let markers = {}, targetMarker = null, currentTarget = null;
+    let accuracyCircle = null;
+    let lastChatCount = 0, isChatOpen = false;
+
+    // แผนที่ Google Maps ภาษาไทย
+    const map = L.map('map', { 
+      zoomControl: false, 
+      attributionControl: false 
+    }).setView([myLat, myLng], 17);
+
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+    }).addTo(map);
+
+    setTimeout(() => { map.invalidateSize(); }, 200);
+
+    function openGoogleMapsNav(destLat, destLng) {
+      window.open(`https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLng}&destination=${destLat},${destLng}&travelmode=driving`, '_blank');
+    }
+
+    async function initFastLiff() {
+      try {
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
+        await Promise.race([liff.init({ liffId: MY_LIFF_ID }), timeoutPromise]);
+
+        if (liff.isLoggedIn()) {
+          try {
+            const profile = await liff.getProfile();
+            myUserId = profile.userId;
+            myName = profile.displayName;
+            myAvatar = profile.pictureUrl || myAvatar;
+          } catch (pe) {
+            const idToken = liff.getDecodedIDToken();
+            if (idToken) {
+              myUserId = idToken.sub || myUserId;
+              myName = idToken.name || myName;
+              myAvatar = idToken.picture || myAvatar;
+            }
+          }
+
+          localStorage.setItem("SQUAD_UID", myUserId);
+          localStorage.setItem("SQUAD_UNAME", myName);
+          localStorage.setItem("SQUAD_UAVATAR", myAvatar);
+
+          document.getElementById("myNameText").textContent = myName;
+          document.getElementById("myAvatarImg").src = myAvatar;
+        }
+      } catch (err) {
+        console.warn("Fast Liff bypass:", err);
+      }
+
+      if (hasGps) {
+        renderMyMarker(myLat, myLng, true);
+        syncSquadLocation();
+      }
+    }
+    initFastLiff();
+
+    function renderMyMarker(lat, lng, forceUpdate = false, bubbleText = '') {
+      const bubbleHtml = bubbleText ? `<div class="speech-bubble">💬 ${bubbleText}</div>` : '';
+      const pinHtml = `
+        <div class="line-user-pin">
+          ${bubbleHtml}
+          <span class="pin-name">${myName} (ฉัน)</span><br>
+          <img src="${myAvatar}" referrerpolicy="no-referrer" class="pin-img">
+        </div>`;
+
+      if (!markers[myUserId]) {
+        markers[myUserId] = L.marker([lat, lng], {
+          icon: L.divIcon({ html: pinHtml, className: '', iconSize: [44, 55], iconAnchor: [22, 50] }),
+          zIndexOffset: 1000
+        }).addTo(map);
+      } else {
+        markers[myUserId].setLatLng([lat, lng]);
+        if (forceUpdate || bubbleText) {
+          markers[myUserId].setIcon(L.divIcon({ html: pinHtml, className: '', iconSize: [44, 55], iconAnchor: [22, 50] }));
+        }
+      }
+
+      if (!accuracyCircle) {
+        accuracyCircle = L.circle([lat, lng], { radius: 15, color: '#06c755', fillOpacity: 0.15 }).addTo(map);
+      } else {
+        accuracyCircle.setLatLng([lat, lng]);
+      }
+    }
+
+    function renderFriendMarker(member) {
+      const uid = member.userId;
+      const hasRecentMsg = member.lastMsg && (Date.now() - member.lastMsgTime < 15000);
+      const bubbleHtml = hasRecentMsg ? `<div class="speech-bubble">💬 ${member.lastMsg}</div>` : '';
+
+      const pinHtml = `
+        <div class="line-user-pin">
+          ${bubbleHtml}
+          <span class="pin-name friend-name">${member.name}</span><br>
+          <img src="${member.avatar}" referrerpolicy="no-referrer" class="pin-img friend-pin">
+        </div>`;
+
+      const popupContent = `
+        <div class="nav-popup">
+          <b>${member.name}</b><br>
+          <span style="font-size:0.75rem; color:#64748b;">ห่าง: ${getDistanceText(myLat, myLng, member.lat, member.lng)}</span><br>
+          <a href="javascript:void(0)" onclick="openGoogleMapsNav(${member.lat}, ${member.lng})" class="nav-btn">
+            🚗 นำทางด้วย Google Maps
+          </a>
+        </div>`;
+
+      if (!markers[uid]) {
+        markers[uid] = L.marker([member.lat, member.lng], {
+          icon: L.divIcon({ html: pinHtml, className: '', iconSize: [44, 55], iconAnchor: [22, 50] })
+        }).addTo(map).bindPopup(popupContent);
+      } else {
+        markers[uid].setLatLng([member.lat, member.lng]);
+        markers[uid].setIcon(L.divIcon({ html: pinHtml, className: '', iconSize: [44, 55], iconAnchor: [22, 50] }));
+        markers[uid].setPopupContent(popupContent);
+      }
+    }
+
+    async function syncSquadLocation(pendingTarget, chatMessage) {
+      if (!hasGps || !BACKEND_URL) return;
+      try {
+        const payload = {
+          roomId: currentRoomId,
+          userId: myUserId,
+          name: myName,
+          avatar: myAvatar,
+          lat: myLat,
+          lng: myLng
+        };
+        if (pendingTarget) payload.setTarget = pendingTarget;
+        if (chatMessage) payload.chatMsg = chatMessage;
+
+        const res = await fetch(BACKEND_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data && data.members) updateRosterAndMap(data.members);
+        if (data && data.target) renderTarget(data.target);
+        if (data && data.chat) updateChatFeed(data.chat);
+      } catch (e) {
+        console.warn("Sync error:", e);
+      }
+    }
+
+    function updateChatFeed(messages) {
+      const feed = document.getElementById("chatFeed");
+      feed.innerHTML = "";
+      messages.forEach(m => {
+        const isMine = m.userId === myUserId;
+        const row = document.createElement("div");
+        row.className = `chat-bubble ${isMine ? 'mine' : ''}`;
+        row.innerHTML = `
+          <img src="${m.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="chat-bubble-avatar" referrerpolicy="no-referrer">
+          <div>
+            <div style="font-size:0.68rem; color:#94a3b8;">${m.name}</div>
+            <div class="chat-bubble-text">${m.text}</div>
+            <div class="chat-time">${m.time}</div>
+          </div>`;
+        feed.appendChild(row);
+      });
+      feed.scrollTop = feed.scrollHeight;
+
+      if (!isChatOpen && messages.length > lastChatCount) {
+        document.getElementById("chatBadge").style.display = "block";
+        document.getElementById("chatBadge").textContent = (messages.length - lastChatCount);
+      }
+      lastChatCount = messages.length;
+    }
+
+    function getDistanceText(lat1, lon1, lat2, lon2) {
+      if (!lat1 || !lat2) return "-";
+      const d = getDistance(lat1, lon1, lat2, lon2);
+      return d < 1 ? (d * 1000).toFixed(0) + " ม." : d.toFixed(1) + " กม.";
+    }
+
+    function updateRosterAndMap(membersList) {
+      const listEl = document.getElementById("memberList");
+      listEl.innerHTML = "";
+
+      renderMyMarker(myLat, myLng);
+      let myDistText = currentTarget ? getDistanceText(myLat, myLng, currentTarget.lat, currentTarget.lng) : "-";
+
+      const myCard = document.createElement("div");
+      myCard.className = "member-card is-me";
+      myCard.onclick = () => { autoFollow = true; map.setView([myLat, myLng], 17); };
+      myCard.innerHTML = `
+        <img src="${myAvatar}" referrerpolicy="no-referrer" class="member-card-img">
+        <div>
+          <div><b>${myName}</b> (ฉัน)</div>
+          <div style="color:#06c755; font-size:0.65rem;">🎯 นัดพบ: ${myDistText}</div>
+        </div>`;
+      listEl.appendChild(myCard);
+
+      membersList.forEach(m => {
+        if (m.userId === myUserId) return;
+        renderFriendMarker(m);
+
+        let distToMe = getDistanceText(myLat, myLng, m.lat, m.lng);
+        const card = document.createElement("div");
+        card.className = "member-card is-friend";
+        card.onclick = () => {
+          autoFollow = false;
+          document.getElementById("btnFollowMe").classList.remove("active");
+          map.setView([m.lat, m.lng], 17);
+          markers[m.userId].openPopup();
+        };
+        card.innerHTML = `
+          <img src="${m.avatar}" referrerpolicy="no-referrer" class="member-card-img">
+          <div>
+            <div><b>${m.name}</b></div>
+            <div style="color:#38bdf8; font-size:0.65rem;">📍 ห่าง ${distToMe}</div>
+          </div>`;
+        listEl.appendChild(card);
+      });
+    }
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.watchPosition((pos) => {
+        myLat = pos.coords.latitude;
+        myLng = pos.coords.longitude;
+        document.getElementById("gpsStatus").textContent = "● GPS สดพร้อม";
+        document.getElementById("gpsStatus").style.color = "#06c755";
+
+        if (!hasGps) {
+          hasGps = true;
+          map.setView([myLat, myLng], 17);
+          map.invalidateSize();
+        }
+        renderMyMarker(myLat, myLng);
+
+        if (autoFollow) {
+          map.panTo([myLat, myLng], { animate: true, duration: 0.5 });
+        }
+
+        syncSquadLocation();
+      }, (err) => {
+        document.getElementById("gpsStatus").textContent = "⚠️ ไม่เปิด GPS";
+        document.getElementById("gpsStatus").style.color = "#ef4444";
+      }, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 6000
+      });
+    }
+
+    setInterval(() => {
+      syncSquadLocation();
+    }, 3000);
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    function renderTarget(t) {
+      currentTarget = t;
+      const label = document.getElementById("targetNameDisplay");
+      const actionText = document.getElementById("targetActionText");
+
+      if (!t || !t.lat) {
+        label.textContent = "ยังไม่ได้กำหนด";
+        actionText.textContent = "(กด 🚩 เพื่อปักหมุด)";
+        actionText.style.color = "#cbd5e1";
+        if (targetMarker) map.removeLayer(targetMarker);
+        return;
+      }
+
+      let distText = getDistanceText(myLat, myLng, t.lat, t.lng);
+      label.textContent = `${t.name} (${distText})`;
+      actionText.textContent = "🚗 แตะนำทาง Google Maps";
+      actionText.style.color = "#22c55e";
+
+      const popupTarget = `
+        <div class="nav-popup">
+          <b>🚩 จุดนัดพบ: ${t.name}</b><br>
+          <span style="font-size:0.75rem; color:#64748b;">โดย: ${t.by} (ห่าง ${distText})</span><br>
+          <a href="javascript:void(0)" onclick="openGoogleMapsNav(${t.lat}, ${t.lng})" class="nav-btn" style="background:#ef4444;">
+            🚗 นำทางไปจุดนัดพบ
+          </a>
+        </div>`;
+
+      if (!targetMarker) {
+        targetMarker = L.marker([t.lat, t.lng], {
+          icon: L.divIcon({ html: '<span style="font-size:2rem;">🚩</span>', className: '', iconSize: [36, 36], iconAnchor: [18, 30] })
+        }).addTo(map).bindPopup(popupTarget);
+      } else {
+        targetMarker.setLatLng([t.lat, t.lng]);
+        targetMarker.setPopupContent(popupTarget);
+      }
+    }
+
+    document.getElementById("targetBox").onclick = () => {
+      if (currentTarget && currentTarget.lat) openGoogleMapsNav(currentTarget.lat, currentTarget.lng);
+      else document.getElementById("btnSetTarget").click();
+    };
+
+    document.getElementById("btnFollowMe").onclick = () => {
+      autoFollow = !autoFollow;
+      document.getElementById("btnFollowMe").classList.toggle("active", autoFollow);
+      if (autoFollow && hasGps) map.setView([myLat, myLng], 17);
+    };
+
+    document.getElementById("btnMyLoc").onclick = () => {
+      if (hasGps) {
+        autoFollow = true;
+        document.getElementById("btnFollowMe").classList.add("active");
+        map.setView([myLat, myLng], 17);
+      }
+    };
+
+    map.on('dragstart', () => {
+      autoFollow = false;
+      document.getElementById("btnFollowMe").classList.remove("active");
+    });
+
+    // 🚩 ค้นหาสถานที่
+    const searchTargetBox = document.getElementById("searchTargetBox");
+    const searchTargetInput = document.getElementById("searchTargetInput");
+    const searchResultsList = document.getElementById("searchResultsList");
+
+    document.getElementById("btnSetTarget").onclick = () => {
+      searchTargetBox.style.display = (searchTargetBox.style.display === "flex") ? "none" : "flex";
+      if (searchTargetBox.style.display === "flex") {
+        searchTargetInput.focus();
+        searchResultsList.innerHTML = "";
+      }
+    };
+
+    document.getElementById("btnSearchTargetClose").onclick = () => {
+      searchTargetBox.style.display = "none";
+      isTargetMode = false;
+      document.getElementById("btnSetTarget").classList.remove("active");
+    };
+
+    async function executePlaceSearch() {
+      const q = searchTargetInput.value.trim();
+      if (!q) return;
+
+      searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#94a3b8;">🔍 กำลังค้นหา "${q}"...</div>`;
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=th&limit=5&addressdetails=1`;
+        const res = await fetch(url, { headers: { 'Accept-Language': 'th,en' } });
+        const data = await res.json();
+
+        if (!data || !data.length) {
+          searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#ef4444;">❌ ไม่พบสถานที่นี้ ลองพิมพ์คำค้นหาอื่น</div>`;
+          return;
+        }
+
+        searchResultsList.innerHTML = "";
+        data.forEach(item => {
+          const lat = parseFloat(item.lat);
+          const lon = parseFloat(item.lon);
+          const shortName = item.name || item.display_name.split(",")[0];
+          const fullDesc = item.display_name;
+
+          const div = document.createElement("div");
+          div.className = "search-result-item";
+          div.innerHTML = `
+            <div class="item-title">📍 ${shortName}</div>
+            <div class="item-sub">${fullDesc.substring(0, 75)}...</div>
+          `;
+          div.onclick = () => {
+            selectAndPinTarget(shortName, lat, lon);
+          };
+          searchResultsList.appendChild(div);
+        });
+      } catch (err) {
+        searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#ef4444;">เกิดข้อผิดพลาดในการค้นหา ลองอีกครั้ง</div>`;
+      }
+    }
+
+    document.getElementById("btnSearchTargetGo").onclick = executePlaceSearch;
+    searchTargetInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") executePlaceSearch();
+    });
+
+    function selectAndPinTarget(placeName, lat, lng) {
+      searchTargetBox.style.display = "none";
+      autoFollow = false;
+      document.getElementById("btnFollowMe").classList.remove("active");
+
+      map.flyTo([lat, lng], 17, { duration: 1.5 });
+
+      const newTarget = { name: placeName, lat: lat, lng: lng, by: myName };
+      renderTarget(newTarget);
+      syncSquadLocation(newTarget);
+      alert(`✅ ปักหมุดจุดนัดพบที่ [${placeName}] เรียบร้อยแล้ว!`);
+    }
+
+    document.getElementById("btnManualPickTip").onclick = () => {
+      searchTargetBox.style.display = "none";
+      isTargetMode = true;
+      document.getElementById("btnSetTarget").classList.add("active");
+      alert("📍 แตะบนจุดใดก็ได้บนแผนที่เพื่อปักหมุดจุดนัดพบ!");
+    };
+
+    map.on('click', (e) => {
+      if (!isTargetMode) return;
+      const name = prompt("🚩 ตั้งชื่อจุดนัดพบนี้:", "จุดนัดพบแก๊ง");
+      if (!name) return;
+      isTargetMode = false;
+      document.getElementById("btnSetTarget").classList.remove("active");
+
+      const newTarget = { name: name, lat: e.latlng.lat, lng: e.latlng.lng, by: myName };
+      renderTarget(newTarget);
+      syncSquadLocation(newTarget);
+    });
+
+    document.getElementById("btnShareLine").onclick = () => {
+      const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${currentRoomId}`;
+      if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
+        liff.shareTargetPicker([
+          { type: "text", text: `📍 อยู่ไหน (YooNhai Live) [ห้อง: ${currentRoomId}]:\nคลิกเข้าร่วมดูพิกัดสดและแชทกลุ่ม:\n${shareUrl}` }
+        ]);
+      } else {
+        alert("คัดลอกลิงก์ส่งเข้า LINE กลุ่มได้เลย:\n" + shareUrl);
+      }
+    };
+
+    document.getElementById("btnClearGhosts").onclick = async () => {
+      if (confirm(`ต้องการล้างหมุดผีและแชทของห้อง [${currentRoomId}] ใช่หรือไม่?`)) {
+        await fetch(BACKEND_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'clear', roomId: currentRoomId })
+        });
+        alert("✅ ล้างห้องนี้เกลี้ยงแล้ว!");
+        location.reload();
+      }
+    };
+
+    const chatDrawer = document.getElementById("chatDrawer");
+    document.getElementById("btnToggleChat").onclick = () => {
+      isChatOpen = !isChatOpen;
+      chatDrawer.classList.toggle("open", isChatOpen);
+      if (isChatOpen) {
+        document.getElementById("chatBadge").style.display = "none";
+        document.getElementById("chatInput").focus();
+      }
+    };
+    document.getElementById("btnCloseChat").onclick = () => {
+      isChatOpen = false;
+      chatDrawer.classList.remove("open");
+    };
+
+    async function sendChatMessage() {
+      const input = document.getElementById("chatInput");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      input.value = "";
+      renderMyMarker(myLat, myLng, true, msg);
+      await syncSquadLocation(null, msg);
+    }
+
+    document.getElementById("btnSendMsg").onclick = sendChatMessage;
+    document.getElementById("chatInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendChatMessage();
+    });
+  </script>
+</body>
+</html>
