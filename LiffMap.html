@@ -8,7 +8,7 @@
   <!-- 1. LINE LIFF SDK 2.x -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-  <!-- 2. Leaflet Map (Cloudflare CDN โหลดไว ไม่โดนบล็อก) -->
+  <!-- 2. Leaflet Map -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
@@ -16,7 +16,10 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
     body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0f19; color: #fff; }
-    #map { width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1; background: #0b0f19; }
+    #map { width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1; background: #e5e3df; }
+
+    /* ซ่อนลายน้ำของ Leaflet ทั้งหมด */
+    .leaflet-control-attribution { display: none !important; }
 
     .top-bar {
       position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1000;
@@ -175,7 +178,7 @@
       <span class="room-badge-pill" id="roomBadge">...</span>
     </div>
     <div style="font-size:0.75rem; color:#06c755; font-weight:bold;">
-      <span id="gpsStatus">📡 กำลังหาดาวเทียม...</span>
+      <span id="gpsStatus">📡 GPS สดพร้อม</span>
     </div>
   </div>
 
@@ -244,23 +247,24 @@
     let accuracyCircle = null;
     let lastChatCount = 0, isChatOpen = false;
 
-    // 🔥 1. เริ่มต้นแผนที่ (ใช้ CartoDB Voyager โหลดฉลุย ไม่มีจอดำ!)
-    const map = L.map('map', { zoomControl: false }).setView([myLat, myLng], 17);
+    // 🔥 สั่งสร้างแผนที่แบบปิด Attribution ลายน้ำทิ้ง 100%
+    const map = L.map('map', { 
+      zoomControl: false, 
+      attributionControl: false 
+    }).setView([myLat, myLng], 17);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // 🔥 ใช้แผ่นที่ Google Maps ภาษาไทย ไร้ลายน้ำ คมชัดระดับ HD
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
       maxZoom: 20,
-      subdomains: 'abcd',
-      attribution: '© CartoDB'
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     }).addTo(map);
 
-    // บังคับเรนเดอร์ขนาดแผนที่ทันที ป้องกันบั๊กจอดำ
-    setTimeout(() => { map.invalidateSize(); }, 300);
+    setTimeout(() => { map.invalidateSize(); }, 200);
 
     function openGoogleMapsNav(destLat, destLng) {
       window.open(`https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLng}&destination=${destLat},${destLng}&travelmode=driving`, '_blank');
     }
 
-    // 🔥 2. ระบบเชื่อมต่อ LINE แบบมี Timeout (2 วินาทีตัดจบ ไม่ค้างเติ่งเด็ดขาด!)
     async function initFastLiff() {
       try {
         const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
@@ -460,12 +464,11 @@
       });
     }
 
-    // 📡 ดักจับ GPS
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition((pos) => {
         myLat = pos.coords.latitude;
         myLng = pos.coords.longitude;
-        document.getElementById("gpsStatus").textContent = "● GPS สด (" + Math.round(pos.coords.accuracy) + "ม.)";
+        document.getElementById("gpsStatus").textContent = "● GPS สดพร้อม";
         document.getElementById("gpsStatus").style.color = "#06c755";
 
         if (!hasGps) {
@@ -481,7 +484,7 @@
 
         syncSquadLocation();
       }, (err) => {
-        document.getElementById("gpsStatus").textContent = "⚠️ ไม่เปิด GPS";
+        document.getElementById("gpsStatus").textContent = "⚠️ สัญญาณหลุด";
         document.getElementById("gpsStatus").style.color = "#ef4444";
       }, {
         enableHighAccuracy: true,
@@ -683,7 +686,6 @@
       }
     };
 
-    // แชทสด
     const chatDrawer = document.getElementById("chatDrawer");
     document.getElementById("btnToggleChat").onclick = () => {
       isChatOpen = !isChatOpen;
