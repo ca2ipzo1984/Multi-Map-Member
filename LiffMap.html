@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🗺️ LINE SQUAD LIVE MAP // แผนที่แก๊งสด</title>
+  <title>📍 อยู่ไหน (YooNhai Live) // แผนที่แก๊งสด</title>
 
+  <!-- 1. LINE LIFF SDK 2.x -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <!-- 2. Leaflet Map -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
@@ -15,6 +18,7 @@
     body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0f19; color: #fff; }
     #map { width: 100%; height: 100%; z-index: 1; }
 
+    /* บาร์ด้านบน */
     .top-bar {
       position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1000;
       background: rgba(15, 23, 42, 0.92); border: 1px solid #334155;
@@ -29,6 +33,7 @@
       font-size: 0.65rem; padding: 2px 6px; border-radius: 8px; font-weight: bold;
     }
 
+    /* ปุ่มลอยด้านข้าง */
     .fab-group { position: absolute; right: 12px; top: 65px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
     .btn-fab {
       width: 44px; height: 44px; border-radius: 50%; border: 1px solid #475569;
@@ -43,6 +48,42 @@
       font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; display: none;
     }
 
+    /* กล่องค้นหาจุดนัดพบอัจฉริยะ */
+    #searchTargetBox {
+      position: absolute; top: 65px; left: 10px; right: 65px; z-index: 1000;
+      background: rgba(15, 23, 42, 0.96); border: 1.5px solid #ef4444;
+      border-radius: 14px; padding: 10px; display: none; flex-direction: column; gap: 8px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+    }
+    .search-input-group { display: flex; gap: 6px; }
+    .search-target-input {
+      flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+      padding: 8px 12px; color: #fff; font-size: 0.85rem; outline: none;
+    }
+    .btn-search-go {
+      background: #ef4444; color: #fff; border: none; border-radius: 8px;
+      padding: 8px 14px; font-weight: bold; font-size: 0.8rem; cursor: pointer;
+    }
+    .btn-search-close {
+      background: #334155; color: #cbd5e1; border: none; border-radius: 8px;
+      padding: 8px 10px; cursor: pointer; font-size: 0.85rem;
+    }
+    .search-results-list {
+      max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
+    }
+    .search-result-item {
+      background: #1e293b; padding: 8px 10px; border-radius: 6px; font-size: 0.75rem;
+      cursor: pointer; display: flex; flex-direction: column; gap: 2px; border: 1px solid #334155;
+    }
+    .search-result-item:hover, .search-result-item:active { background: #334155; border-color: #ef4444; }
+    .item-title { font-weight: bold; color: #f8fafc; }
+    .item-sub { font-size: 0.65rem; color: #94a3b8; }
+    .search-manual-tip {
+      font-size: 0.7rem; color: #38bdf8; text-align: center; cursor: pointer; padding: 4px;
+      border-top: 1px dashed #334155; margin-top: 4px;
+    }
+
+    /* แดชบอร์ดล่าง */
     .bottom-panel {
       position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
       background: rgba(15, 23, 42, 0.95); border-top: 1px solid #334155;
@@ -142,12 +183,14 @@
 </head>
 <body>
 
+  <!-- ม่านล็อกอิน -->
   <div id="loginGate">
-    <h2>🗺️ แผนที่พิกัดแก๊งสด</h2>
-    <p style="color:#94a3b8; font-size:0.85rem; margin-top:8px;">กรุณาเข้าสู่ระบบด้วย LINE เพื่อเริ่มซิงก์พิกัดและแชทสด</p>
+    <h2>📍 อยู่ไหน (YooNhai Live)</h2>
+    <p style="color:#94a3b8; font-size:0.85rem; margin-top:8px;">กรุณาเข้าสู่ระบบด้วย LINE เพื่อเริ่มซิงก์พิกัดแก๊งสด</p>
     <button class="btn-login" onclick="liff.login()">เข้าสู่ระบบผ่าน LINE</button>
   </div>
 
+  <!-- บาร์บน -->
   <div class="top-bar">
     <div class="user-profile-badge">
       <a href="dashboard.html" class="btn-back-dash" title="กลับหน้า Dashboard">◀</a>
@@ -160,13 +203,25 @@
     </div>
   </div>
 
+  <!-- กล่องค้นหาจุดนัดพบอัจฉริยะ -->
+  <div id="searchTargetBox">
+    <div class="search-input-group">
+      <input type="text" class="search-target-input" id="searchTargetInput" placeholder="🔍 พิมพ์ชื่อสถานที่ (เช่น เมอร์รี่คิงส์, สยาม, เซ็นทรัล)...">
+      <button class="btn-search-go" id="btnSearchTargetGo">ค้นหา</button>
+      <button class="btn-search-close" id="btnSearchTargetClose">✕</button>
+    </div>
+    <div class="search-results-list" id="searchResultsList"></div>
+    <div class="search-manual-tip" id="btnManualPickTip">👉 หรือ แตะบนแผนที่เพื่อปักหมุดเอง</div>
+  </div>
+
+  <!-- ปุ่มควบคุมขวาบน -->
   <div class="fab-group">
     <button class="btn-fab" id="btnToggleChat" title="เปิดห้องแชทสด">
       💬<span class="chat-badge" id="chatBadge">0</span>
     </button>
     <button class="btn-fab active" id="btnFollowMe" title="ล็อกมุมกล้องตามตัว">🎯</button>
     <button class="btn-fab" id="btnMyLoc" title="ดึงพิกัดปัจจุบัน">📍</button>
-    <button class="btn-fab" id="btnSetTarget" title="ปักหมุดจุดนัดพบ">🚩</button>
+    <button class="btn-fab" id="btnSetTarget" title="ตั้งจุดนัดพบ (ค้นหาสถานที่)">🚩</button>
     <button class="btn-fab" id="btnShareLine" title="แชร์เข้ากลุ่ม LINE">📤</button>
     <button class="btn-fab" id="btnClearGhosts" title="ล้างหมุดผีทิ้ง" style="background:#7f1d1d; border-color:#ef4444;">🧹</button>
   </div>
@@ -186,6 +241,7 @@
     </div>
   </div>
 
+  <!-- แดชบอร์ดล่าง -->
   <div class="bottom-panel">
     <div class="target-box" id="targetBox">
       <div><b>🚩 นัดพบ:</b> <span id="targetNameDisplay">ยังไม่ได้กำหนด</span></div>
@@ -198,7 +254,7 @@
     const MY_LIFF_ID = "2012010620-7LrsLOGx";
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
 
-    // 🔥 1. ระบบกุญแจห้องอัตโนมัติ (ดึงจาก URL เช่น ?room=ROOM-9428 ถ้าไม่มีเป็น default)
+    // อ่านรหัสห้องจาก URL อัตโนมัติ (ถ้าไม่มีเป็น default)
     const currentRoomId = new URLSearchParams(window.location.search).get('room') || 'default';
     document.getElementById("roomBadge").textContent = currentRoomId;
 
@@ -309,12 +365,12 @@
       }
     }
 
-    // 🔥 2. SYNC แยกห้องขาดจากกัน 100% (ส่ง roomId ไปด้วยเสมอ)
+    // SYNC ทั้งพิกัดและแชทสด แยกตามห้อง
     async function syncSquadLocation(pendingTarget, chatMessage) {
       if (!hasGps || !isAuthed || !myUserId || !BACKEND_URL) return;
       try {
         const payload = {
-          roomId: currentRoomId, // 🔥 กุญแจแยกห้อง
+          roomId: currentRoomId,
           userId: myUserId,
           name: myName,
           avatar: myAvatar,
@@ -507,80 +563,4 @@
     };
 
     map.on('dragstart', () => {
-      autoFollow = false;
-      document.getElementById("btnFollowMe").classList.remove("active");
-    });
-
-    document.getElementById("btnSetTarget").onclick = () => {
-      isTargetMode = !isTargetMode;
-      document.getElementById("btnSetTarget").classList.toggle("active", isTargetMode);
-      if (isTargetMode) alert("📍 แตะบนแผนที่เพื่อตั้งเป้าหมายนัดพบ!");
-    };
-
-    map.on('click', (e) => {
-      if (!isTargetMode) return;
-      const name = prompt("🚩 ตั้งชื่อจุดนัดพบนี้:", "จุดนัดพบแก๊ง");
-      if (!name) return;
-      isTargetMode = false;
-      document.getElementById("btnSetTarget").classList.remove("active");
-
-      const newTarget = { name: name, lat: e.latlng.lat, lng: e.latlng.lng, by: myName };
-      renderTarget(newTarget);
-      syncSquadLocation(newTarget);
-    });
-
-    // 🔥 แชร์ลิงก์เฉพาะห้องนี้
-    document.getElementById("btnShareLine").onclick = () => {
-      const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${currentRoomId}`;
-      if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable('shareTargetPicker')) {
-        liff.shareTargetPicker([
-          { type: "text", text: `🗺️ แผนที่พิกัดแก๊งสด [ห้อง: ${currentRoomId}]:\n${shareUrl}` }
-        ]);
-      } else {
-        alert("คัดลอกลิงก์ส่งเข้า LINE กลุ่มได้เลย:\n" + shareUrl);
-      }
-    };
-
-    document.getElementById("btnClearGhosts").onclick = async () => {
-      if (confirm(`ต้องการล้างหมุดผีและแชทของห้อง [${currentRoomId}] ใช่หรือไม่?`)) {
-        await fetch(BACKEND_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'clear', roomId: currentRoomId })
-        });
-        alert("✅ ล้างห้องนี้เกลี้ยงแล้ว!");
-        location.reload();
-      }
-    };
-
-    const chatDrawer = document.getElementById("chatDrawer");
-    document.getElementById("btnToggleChat").onclick = () => {
-      isChatOpen = !isChatOpen;
-      chatDrawer.classList.toggle("open", isChatOpen);
-      if (isChatOpen) {
-        document.getElementById("chatBadge").style.display = "none";
-        document.getElementById("chatInput").focus();
-      }
-    };
-    document.getElementById("btnCloseChat").onclick = () => {
-      isChatOpen = false;
-      chatDrawer.classList.remove("open");
-    };
-
-    async function sendChatMessage() {
-      const input = document.getElementById("chatInput");
-      const msg = input.value.trim();
-      if (!msg) return;
-
-      input.value = "";
-      renderMyMarker(myLat, myLng, true, msg);
-      await syncSquadLocation(null, msg);
-    }
-
-    document.getElementById("btnSendMsg").onclick = sendChatMessage;
-    document.getElementById("chatInput").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") sendChatMessage();
-    });
-  </script>
-</body>
-</html>
+      
