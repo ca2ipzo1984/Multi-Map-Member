@@ -705,4 +705,42 @@
       if (confirm(`ต้องการล้างหมุดผีและแชทของห้อง [${currentRoomId}] ใช่หรือไม่?`)) {
         await fetch(BACKEND_URL, {
           method: 'POST',
-          headers:
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'clear', roomId: currentRoomId })
+        });
+        alert("✅ ล้างห้องนี้เกลี้ยงแล้ว!");
+        location.reload();
+      }
+    };
+
+    const chatDrawer = document.getElementById("chatDrawer");
+    document.getElementById("btnToggleChat").onclick = () => {
+      isChatOpen = !isChatOpen;
+      chatDrawer.classList.toggle("open", isChatOpen);
+      if (isChatOpen) {
+        document.getElementById("chatBadge").style.display = "none";
+        document.getElementById("chatInput").focus();
+      }
+    };
+    document.getElementById("btnCloseChat").onclick = () => {
+      isChatOpen = false;
+      chatDrawer.classList.remove("open");
+    };
+
+    async function sendChatMessage() {
+      const input = document.getElementById("chatInput");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      input.value = "";
+      renderMyMarker(myLat, myLng, true, msg);
+      await syncSquadLocation(null, msg);
+    }
+
+    document.getElementById("btnSendMsg").onclick = sendChatMessage;
+    document.getElementById("chatInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendChatMessage();
+    });
+  </script>
+</body>
+</html>
