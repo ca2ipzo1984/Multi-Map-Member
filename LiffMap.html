@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>📍 U-Nhai // Squad Live Map</title>
 
-  <!-- LINE LIFF SDK 2.x -->
+  <!-- 1. LINE LIFF SDK 2.x -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-  <!-- Leaflet Map CSS & JS -->
+  <!-- 2. Leaflet Map CSS & JS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
   
-  <!-- Google Fonts -->
+  <!-- 3. Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -209,10 +209,17 @@
     .btn-acc-logout { background: #ef4444; color: #fff; margin-top: 8px; }
     .btn-acc-close { background: #334155; color: #cbd5e1; }
   </style>
+  <!-- PWA & Mobile Web App Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="logo.png">
 </head>
 <body style="background:#0b0f19; margin:0; padding:0; overflow:hidden;">
 
-  <!-- แถบบน -->
+  <!-- แถบบน: โลโก้หมุดนีออนของแท้ SVG + โปรไฟล์ -->
   <div class="top-bar">
     <div class="user-profile-badge" id="btnProfileHeader" title="Manage Account">
       <a href="dashboard.html" class="btn-back-dash" title="Back to Dashboard">◀</a>
@@ -229,29 +236,31 @@
 
       <div style="display:flex; align-items:center; gap:6px;">
         <img id="myAvatarImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" referrerpolicy="no-referrer" class="user-avatar-mini" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:2px solid #38bdf8;">
-        <span id="myNameText" style="max-width:85px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:bold;">Guest</span>
+        <span id="myNameText" style="max-width:85px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:bold;">สหาย</span>
         <span class="room-badge-pill" id="roomBadge">...</span>
       </div>
     </div>
     <div style="font-size:0.75rem; color:#06c755; font-weight:bold;">
-      <span id="gpsStatus">📡 Live GPS Ready</span>
+      <span id="gpsStatus">📡 GPS สดพร้อม</span>
     </div>
   </div>
 
   <div id="searchTargetBox">
     <div class="search-input-group">
       <input type="text" class="search-target-input" id="searchTargetInput" placeholder="🔍 Search places...">
-      <button class="btn-search-go" id="btnSearchTargetGo">Search</button>
+      <button class="btn-search-go" id="btnSearchTargetGo">ค้นหา</button>
       <button class="btn-search-close" id="btnSearchTargetClose">✕</button>
     </div>
     <div class="search-results-list" id="searchResultsList"></div>
-    <div class="search-manual-tip" id="btnManualPickTip">👉 Or tap anywhere on map to pin</div>
+    <div class="search-manual-tip" id="btnManualPickTip">👉 หรือ แตะบนแผนที่เพื่อปักหมุดเอง</div>
   </div>
 
   <div class="fab-group">
     <button class="btn-fab" id="btnToggleChat" title="Live Chat">
       💬<span class="chat-badge" id="chatBadge">0</span>
     </button>
+        <!-- ปุ่มควบคุมโหมดส่งพิกัดเบื้องหลัง (Background GPS Keep-Alive) -->
+    <button class="btn-fab active" id="btnBgMode" title="โหมดส่งพิกัดเบื้องหลัง (พับจอไม่หลุด)">🔄</button>
     <button class="btn-fab active" id="btnFollowMe" title="Follow Me">🎯</button>
     <button class="btn-fab" id="btnMyLoc" title="My Location">📍</button>
     <!-- ปุ่มธงเป้าหมาย: แตะเพื่อปักหมุด / กดค้างเพื่อยกเลิกจุดนัดพบ -->
@@ -264,20 +273,20 @@
 
   <div id="chatDrawer">
     <div class="chat-header">
-      <span id="chatHeaderTitle">💬 Squad Live Chat</span>
+      <span id="chatHeaderTitle">💬 แชทแก๊งสด (Live Chat)</span>
       <span style="cursor:pointer; font-size:1.2rem;" id="btnCloseChat">✕</span>
     </div>
     <div class="chat-messages" id="chatFeed"></div>
     <div class="chat-input-bar">
-      <input type="text" class="chat-input" id="chatInput" placeholder="Type message..." maxlength="150">
-      <button class="btn-send" id="btnSendMsg">Send</button>
+      <input type="text" class="chat-input" id="chatInput" placeholder="พิมพ์ข้อความในแก๊ง..." maxlength="150">
+      <button class="btn-send" id="btnSendMsg">ส่ง</button>
     </div>
   </div>
 
   <div class="bottom-panel">
     <div class="target-box" id="targetBox" title="แตะเพื่อนำทาง / กดค้างเพื่อยกเลิกจุดนัดพบ">
-      <div><b id="targetLabelText">🚩 Rendezvous:</b> <span id="targetNameDisplay">Not set yet</span></div>
-      <div id="targetActionText" style="font-size:0.72rem; color:#38bdf8; font-weight:bold;">(Tap to pin / Long-press to cancel)</div>
+      <div><b id="targetLabelText">🚩 นัดพบ:</b> <span id="targetNameDisplay">ยังไม่ได้กำหนด</span></div>
+      <div id="targetActionText" style="font-size:0.72rem; color:#38bdf8; font-weight:bold;">(แตะเพื่อปักหมุด)</div>
     </div>
     <div class="member-scroll" id="memberList"></div>
   </div>
@@ -286,20 +295,20 @@
   <div id="modalAccount" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; padding:20px;">
     <div class="account-card">
       <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="acc-avatar" referrerpolicy="no-referrer">
-      <div class="acc-name" id="accModalName">Guest</div>
-      <div class="acc-id" id="accModalId">Status: Temporary</div>
+      <div class="acc-name" id="accModalName">สหาย</div>
+      <div class="acc-id" id="accModalId">สถานะ: บัญชีชั่วคราว</div>
 
       <div id="accLoginActions">
         <button class="btn-acc btn-acc-line" id="btnAccLoginLine">
-          <span>💬</span> <span id="btnAccLoginLineText">Log in with LINE</span>
+          <span>💬</span> <span id="btnAccLoginLineText">เข้าสู่ระบบด้วย LINE</span>
         </button>
         <button class="btn-acc btn-acc-google" id="btnAccLoginGoogle">
-          <span>🌐</span> <span id="btnAccLoginGoogleText">Log in with Google</span>
+          <span>🌐</span> <span id="btnAccLoginGoogleText">เข้าสู่ระบบด้วย Google</span>
         </button>
       </div>
 
-      <button class="btn-acc btn-acc-logout" id="btnAccLogout">🚪 Log out</button>
-      <button class="btn-acc btn-acc-close" id="btnAccCloseModal">Close</button>
+      <button class="btn-acc btn-acc-logout" id="btnAccLogout">🚪 ออกจากระบบ (Log out)</button>
+      <button class="btn-acc btn-acc-close" id="btnAccCloseModal">ปิดหน้าต่าง</button>
     </div>
   </div>
 
@@ -308,7 +317,7 @@
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
     const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
-    // 1. ตรวจจับภาษาเริ่มต้นของเครื่อง (Default Device Language Detection)
+    // 1. ตรวจจับภาษาเริ่มต้นของเครื่องอย่างละเอียด (Default Device Language Detection)
     const rawLang = (navigator.languages && navigator.languages.length ? navigator.languages[0] : (navigator.language || navigator.userLanguage || "th")).toLowerCase();
     const isThai = rawLang.startsWith("th");
 
@@ -663,7 +672,7 @@
       label.textContent = `${t.name} (${distText})`;
       actionText.textContent = i18n.targetNavMaps; actionText.style.color = "#22c55e";
 
-      const popupTarget = `<div style="text-align:center; color:#1e293b; padding:4px;"><b>${i18n.targetLabel} ${t.name}</b><br><span style="font-size:0.75rem; color:#64748b;">${t.by} (${i18n.awayLabel} ${distText})</span><br><a href="javascript:void(0)" onclick="openGoogleMapsNav(${t.lat}, ${t.lng})" class="nav-btn" style="background:#ef4444;">${i18n.targetNavBtn}</a><br><a href="javascript:void(0)" onclick="cancelRendezvousTarget()" style="display:inline-block; margin-top:6px; color:#ef4444; font-size:0.75rem; font-weight:bold; text-decoration:underline;">❌ ${i18n.targetCancelConfirm.split("?")[0]}</a></div>`;
+      const popupTarget = `<div style="text-align:center; color:#1e293b; padding:4px;"><b>${i18n.targetLabel} ${t.name}</b><br><span style="font-size:0.75rem; color:#64748b;">${t.by} (${i18n.awayLabel} ${distText})</span><br><a href="javascript:void(0)" onclick="openGoogleMapsNav(${t.lat}, ${t.lng})" class="nav-btn" style="background:#ef4444;">${i18n.targetNavBtn}</a><br><a href="javascript:void(0)" onclick="cancelRendezvousTarget()" style="display:inline-block; margin-top:6px; color:#ef4444; font-size:0.75rem; font-weight:bold; text-decoration:underline;">❌ ยกเลิกจุดนัดพบ</a></div>`;
       if (!targetMarker) {
         targetMarker = L.marker([t.lat, t.lng], { icon: L.divIcon({ html: '<span style="font-size:2rem;">🚩</span>', className: "", iconSize: [36, 36], iconAnchor: [18, 30] }) }).addTo(map).bindPopup(popupTarget);
       } else {
@@ -813,7 +822,8 @@
     document.getElementById("btnShareLine").onclick = () => {
       const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${currentRoomId}`;
       if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable("shareTargetPicker")) {
-        liff.shareTargetPicker([{ type: "text", text: `📍 U-Nhai [${currentRoomId}]\n${shareUrl}` }]);
+        liff.shareTargetPicker([{ type: "text", text: `📍 U-Nhai [${currentRoomId}]
+${shareUrl}` }]);
       } else { navigator.clipboard.writeText(shareUrl); alert(i18n.copied + shareUrl); }
     };
 
@@ -874,265 +884,79 @@
         location.reload();
       }
     };
+  
+    // ========================================================
+    // 🔄 ระบบพิกัดเบื้องหลัง (PWA + Background Audio Keep-Alive)
+    // ========================================================
+    let isBgTracking = true;
+    let bgAudio = null;
+    let wakeLock = null;
+
+    // ลงทะเบียน Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg fail:', err));
+    }
+
+    // เสียงเงียบ (Silent Audio Loop) ความยาวสั้นมาก เพื่อคงเธรด JavaScript ไม่ให้โดน OS สั่งหลับ
+    const SILENT_AUDIO_URI = "data:audio/wav;base64,UklGRmQfAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+
+    function initBackgroundKeepAlive() {
+      if (bgAudio) return;
+      try {
+        bgAudio = new Audio(SILENT_AUDIO_URI);
+        bgAudio.loop = true;
+        bgAudio.volume = 0.001; // เบาจนไม่มีเสียง เพื่อไม่กวนมีเดียอื่น
+        if (isBgTracking) {
+          bgAudio.play().catch(() => {});
+        }
+      } catch(e) {}
+      requestWakeLock();
+    }
+
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator && isBgTracking) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch(e) {}
+    }
+
+    // เมื่อพับหน้าจอหรือสลับแอป: ให้เสียงเงียบรันต่อเนื่องเพื่อคงการยิงพิกัด GPS
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (bgAudio && isBgTracking) {
+          bgAudio.play().catch(() => {});
+        }
+      } else {
+        requestWakeLock();
+      }
+    });
+
+    // เริ่มทำงานทันทีที่มีการแตะหน้าจอครั้งแรก (ตามนโยบาย Audio ของบราวเซอร์)
+    ['touchstart', 'click'].forEach(evt => {
+      document.addEventListener(evt, () => {
+        initBackgroundKeepAlive();
+      }, { once: true });
+    });
+
+    // ปุ่มสลับเปิด-ปิดโหมดทำงานเบื้องหลัง
+    const btnBgMode = document.getElementById("btnBgMode");
+    if (btnBgMode) {
+      btnBgMode.onclick = () => {
+        isBgTracking = !isBgTracking;
+        btnBgMode.classList.toggle("active", isBgTracking);
+        if (isBgTracking) {
+          initBackgroundKeepAlive();
+          if (bgAudio) bgAudio.play().catch(() => {});
+          alert(isThai ? "✅ เปิดโหมดเบื้องหลัง: พิกัดจะส่งสดตลอดเวลาแม้พับจอหรือสลับแอป" : "✅ Background GPS enabled: Locations will keep syncing when folded/locked.");
+        } else {
+          if (bgAudio) bgAudio.pause();
+          if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+          alert(isThai ? "⏸️ ปิดโหมดเบื้องหลัง: พิกัดจะหยุดส่งเมื่อพับจอเพื่อประหยัดแบต" : "⏸️ Background GPS disabled.");
+        }
+      };
+    }
+
   </script>
 </body>
 </html>
-
-
----
-
-#### 2. ไฟล์หน้ารวมห้อง: `dashboard.html` (และ `index.html`)
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🗂️ U-Nhai // Squad Maps</title>
-  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: #0b0f19 !important; color: #fff !important; min-height: 100vh; padding: 16px 16px 95px 16px; margin: 0; }
-    .header-branding { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 18px; }
-    .brand-logo-badge { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; border: 2px solid #06c755; background: #0f172a; box-shadow: 0 0 15px rgba(6,199,85,0.7); flex-shrink: 0; }
-    .profile-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; cursor: pointer; }
-    .avatar-lg { width: 48px !important; height: 48px !important; min-width: 48px !important; max-width: 48px !important; border-radius: 50% !important; border: 2.5px solid #06c755 !important; object-fit: cover !important; background: #0f172a; flex-shrink: 0 !important; }
-    .section-title { font-size: 1.05rem; font-weight: bold; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; color: #cbd5e1; }
-    .project-grid { display: flex; flex-direction: column; gap: 12px; }
-    .project-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-    .room-badge { background: #0f172a; border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
-    .card-actions { display: flex; gap: 8px; margin-top: 4px; }
-    .btn-action { flex: 1; padding: 10px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: bold; border: none; cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .btn-enter { background: #06c755; color: #fff; }
-    .btn-share { background: #2563eb; color: #fff; }
-    .btn-del { background: #334155; color: #ef4444; flex: 0 0 40px; font-size: 1rem; }
-    .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15,23,42,0.96); border-top: 1px solid #334155; padding: 14px 16px; z-index: 1000; }
-    .btn-create-main { width: 100%; background: linear-gradient(135deg, #06c755, #059669); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    #modalCreate, #modalAccount { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: #1e293b; border: 1px solid #475569; border-radius: 16px; width: 100%; max-width: 360px; padding: 20px; text-align: center; }
-    .modal-input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; color: #fff; outline: none; margin-bottom: 16px; font-size: 0.9rem; }
-    .btn-modal { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
-    .btn-acc { width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
-  </style>
-</head>
-<body style="background:#0b0f19; color:#fff; min-height:100vh; padding:16px 16px 95px 16px; margin:0;">
-  <div class="header-branding" style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:18px;">
-    <div class="brand-logo-badge" style="display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:10px; border:2px solid #06c755; background:#0f172a; flex-shrink:0;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#06c755" stroke="#ffffff" stroke-width="1.5"/><circle cx="12" cy="9" r="3" fill="#ffffff"/></svg>
-    </div>
-    <div style="font-size:1.3rem; font-weight:bold; color:#f8fafc;">📍 U-Nhai</div>
-  </div>
-
-  <div class="profile-card" id="btnProfileCard" style="background:#1e293b; border:1px solid #334155; border-radius:16px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; cursor:pointer;">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" style="width:48px !important; height:48px !important; min-width:48px !important; max-width:48px !important; border-radius:50% !important; border:2.5px solid #06c755 !important; object-fit:cover !important; flex-shrink:0 !important; background:#0f172a;" class="avatar-lg">
-      <div>
-        <div id="userName" style="font-size:1rem; font-weight:bold; color:#f8fafc;">Loading...</div>
-        <div id="userSub" style="font-size:0.75rem; color:#94a3b8;">Squad Live GPS Command Hub</div>
-      </div>
-    </div>
-    <div id="btnProfileManageText" style="background:#0f172a; border:1px solid #38bdf8; color:#38bdf8; font-size:0.72rem; padding:4px 10px; border-radius:10px; font-weight:bold;">Account ⚙️</div>
-  </div>
-
-  <div class="section-title" style="font-size:1.05rem; font-weight:bold; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; color:#cbd5e1;">
-    <span id="sectionTitleText">🗺️ My Squad Maps</span>
-    <span id="projectCount" class="room-badge" style="background:#0f172a; border:1px solid #38bdf8; color:#38bdf8; font-size:0.68rem; padding:2px 8px; border-radius:10px; font-weight:bold;">0</span>
-  </div>
-
-  <div class="project-grid" id="projectList" style="display:flex; flex-direction:column; gap:12px;">
-    <div id="emptyTip" style="text-align:center; color:#64748b; padding:40px 0;">No squad maps yet</div>
-  </div>
-
-  <div class="bottom-bar" style="position:fixed; bottom:0; left:0; right:0; background:rgba(15,23,42,0.96); border-top:1px solid #334155; padding:14px 16px; z-index:1000;">
-    <button class="btn-create-main" id="btnOpenCreate" style="width:100%; background:linear-gradient(135deg, #06c755, #059669); color:#fff; border:none; border-radius:12px; padding:14px; font-size:1rem; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-      <span>➕</span> <span id="btnCreateText">Create New Squad Map</span>
-    </button>
-  </div>
-
-  <div id="modalCreate" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; padding:20px;">
-    <div class="modal-box" style="background:#1e293b; border:1px solid #475569; border-radius:16px; width:100%; max-width:360px; padding:20px; text-align:center;">
-      <div id="modalCreateTitle" style="font-size:1.15rem; font-weight:bold; margin-bottom:12px; color:#fff;">🚩 Create New Squad Map</div>
-      <input type="text" class="modal-input" id="roomNameInput" placeholder="e.g. Roadtrip 2026, Delivery Squad" maxlength="30" style="width:100%; background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px; color:#fff; outline:none; margin-bottom:16px;">
-      <div style="display:flex; gap:10px;">
-        <button class="btn-modal" id="btnCancelModal" style="flex:1; padding:10px; border-radius:8px; font-weight:bold; background:#334155; color:#cbd5e1;">Cancel</button>
-        <button class="btn-modal" id="btnConfirmCreate" style="flex:1; padding:10px; border-radius:8px; font-weight:bold; background:#06c755; color:#fff;">Create Now</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modalAccount" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; padding:20px;">
-    <div style="background:#1e293b; border:1px solid #475569; border-radius:20px; width:100%; max-width:340px; padding:24px; text-align:center;">
-      <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" style="width:72px; height:72px; border-radius:50%; border:3px solid #06c755; margin:0 auto 12px; object-fit:cover; background:#0f172a;">
-      <div id="accModalName" style="font-size:1.15rem; font-weight:bold; color:#fff; margin-bottom:4px;">Guest</div>
-      <div id="accModalId" style="font-size:0.75rem; color:#94a3b8; margin-bottom:20px;">Status: Temporary</div>
-      <div id="accLoginActions">
-        <button class="btn-acc" id="btnAccLoginLine" style="background:#06c755; color:#fff;"><span>💬</span> <span id="dashLoginLineText">Log in with LINE</span></button>
-        <button class="btn-acc" id="btnAccLoginGoogle" style="background:#fff; color:#1f2937;"><span>🌐</span> <span id="dashLoginGoogleText">Log in with Google</span></button>
-      </div>
-      <button class="btn-acc" id="btnAccLogout" style="background:#ef4444; color:#fff; margin-top:8px;">🚪 Log out</button>
-      <button class="btn-acc" id="btnAccCloseModal" style="background:#334155; color:#cbd5e1;">Close</button>
-    </div>
-  </div>
-
-  <script>
-    const MY_LIFF_ID = "2012010620-7LrsLOGx";
-    const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
-
-    // ตรวจจับภาษาเริ่มต้นของเครื่อง (Device Default Language)
-    const rawLang = (navigator.languages && navigator.languages.length ? navigator.languages[0] : (navigator.language || navigator.userLanguage || "th")).toLowerCase();
-    const isThai = rawLang.startsWith("th");
-
-    const dict = {
-      th: {
-        title: "🗂️ U-Nhai // รวมแผนที่แก๊ง",
-        userSub: "ศูนย์บัญชาการแผนที่แก๊งสด",
-        accountBtn: "บัญชี ⚙️",
-        sectionTitle: "🗺️ รายการแผนที่ของฉัน",
-        emptyTip: "ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างห้องใหม่!",
-        btnCreate: "สร้างแผนที่กลุ่มใหม่",
-        modalTitle: "🚩 สร้างแผนที่กลุ่มใหม่",
-        modalPlaceholder: "เช่น ทริปเขาใหญ่ 2026, ทีมไรเดอร์",
-        cancel: "ยกเลิก",
-        createNow: "สร้างห้องทันที",
-        enterMap: "🗺️ เข้าแผนที่",
-        shareLine: "📤 แชร์เข้า LINE",
-        deleteConfirm: "ต้องการลบห้องนี้ใช่หรือไม่?",
-        createdOn: "สร้างเมื่อ:",
-        by: "โดย",
-        unitRoom: "ห้อง",
-        copied: "คัดลอกลิงก์ห้องเรียบร้อย:\n",
-        accTemp: "⚠️ บัญชีชั่วคราว (กดล็อกอินด้านล่าง)",
-        accLogged: "● บัญชี:",
-        loginLine: "เข้าสู่ระบบด้วย LINE",
-        loginGoogle: "เข้าสู่ระบบด้วย Google",
-        logoutBtn: "🚪 ออกจากระบบ (Log out)",
-        closeModal: "ปิดหน้าต่าง",
-        logoutConfirm: "ต้องการออกจากระบบ (Log out) ใช่หรือไม่?",
-        promptGoogle: "กรอกชื่อหรืออีเมลสำหรับแสดงตัวตน:",
-        enterNamePrompt: "กรุณาตั้งชื่อห้องก่อน!",
-        createSuccess: "✅ สร้างแผนที่สำเร็จ!"
-      },
-      en: {
-        title: "🗂️ U-Nhai // Squad Maps",
-        userSub: "Squad Live GPS Command Hub",
-        accountBtn: "Account ⚙️",
-        sectionTitle: "🗺️ My Squad Maps",
-        emptyTip: "No squad maps yet<br>Tap green button below to create your first room!",
-        btnCreate: "Create New Squad Map",
-        modalTitle: "🚩 Create New Squad Map",
-        modalPlaceholder: "e.g. Roadtrip 2026, Delivery Team",
-        cancel: "Cancel",
-        createNow: "Create Now",
-        enterMap: "🗺️ Open Map",
-        shareLine: "📤 Share to LINE",
-        deleteConfirm: "Do you want to delete this room?",
-        createdOn: "Created:",
-        by: "by",
-        unitRoom: "Rooms",
-        copied: "Room link copied:\n",
-        accTemp: "⚠️ Temporary Account (Log in below)",
-        accLogged: "● Account:",
-        loginLine: "Log in with LINE",
-        loginGoogle: "Log in with Google",
-        logoutBtn: "🚪 Log out",
-        closeModal: "Close",
-        logoutConfirm: "Do you want to log out?",
-        promptGoogle: "Enter your name or email for identity:",
-        enterNamePrompt: "Please enter a room name!",
-        createSuccess: "✅ Squad map created successfully!"
-      }
-    };
-
-    const i18n = isThai ? dict.th : dict.en;
-
-    function applyI18n() {
-      document.title = i18n.title;
-      document.getElementById("userSub").textContent = i18n.userSub;
-      document.getElementById("btnProfileManageText").textContent = i18n.accountBtn;
-      document.getElementById("sectionTitleText").textContent = i18n.sectionTitle;
-      document.getElementById("emptyTip").innerHTML = i18n.emptyTip;
-      document.getElementById("btnCreateText").textContent = i18n.btnCreate;
-      document.getElementById("modalCreateTitle").textContent = i18n.modalTitle;
-      document.getElementById("roomNameInput").placeholder = i18n.modalPlaceholder;
-      document.getElementById("btnCancelModal").textContent = i18n.cancel;
-      document.getElementById("btnConfirmCreate").textContent = i18n.createNow;
-      document.getElementById("dashLoginLineText").textContent = i18n.loginLine;
-      document.getElementById("dashLoginGoogleText").textContent = i18n.loginGoogle;
-      document.getElementById("btnAccLogout").textContent = i18n.logoutBtn;
-      document.getElementById("btnAccCloseModal").textContent = i18n.closeModal;
-    }
-    applyI18n();
-
-    let myProfile = {
-      userId: localStorage.getItem("SQUAD_UID") || ("U_" + Date.now().toString().slice(-6)),
-      name: localStorage.getItem("SQUAD_UNAME") || (isThai ? "สหาย" : "Guest"),
-      avatar: localStorage.getItem("SQUAD_UAVATAR") || DEFAULT_AVATAR,
-      provider: localStorage.getItem("SQUAD_AUTH_PROVIDER") || ""
-    };
-    localStorage.setItem("SQUAD_UID", myProfile.userId);
-
-    function updateDashboardUI() {
-      document.getElementById("userName").textContent = myProfile.name;
-      document.getElementById("userAvatar").src = myProfile.avatar;
-      document.getElementById("accModalAvatar").src = myProfile.avatar;
-      document.getElementById("accModalName").textContent = myProfile.name;
-
-      const accIdEl = document.getElementById("accModalId");
-      const loginActions = document.getElementById("accLoginActions");
-      const btnLogout = document.getElementById("btnAccLogout");
-
-      if (myProfile.provider) {
-        accIdEl.innerHTML = `<span style="color:#06c755; font-weight:bold;">${i18n.accLogged} ${myProfile.provider === "line" ? "LINE" : "Google"} (${myProfile.userId.slice(-6)})</span>`;
-        loginActions.style.display = "none";
-        btnLogout.style.display = "block";
-      } else {
-        accIdEl.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">${i18n.accTemp}</span>`;
-        loginActions.style.display = "block";
-        btnLogout.style.display = "none";
-      }
-    }
-    updateDashboardUI();
-
-    async function initDashboardLiff() {
-      try {
-        if (typeof liff === "undefined") { renderProjects(); return; }
-        await liff.init({ liffId: MY_LIFF_ID });
-        if (liff.isLoggedIn()) {
-          try {
-            const p = await liff.getProfile();
-            myProfile.userId = p.userId;
-            myProfile.name = p.displayName || myProfile.name;
-            myProfile.avatar = p.pictureUrl || myProfile.avatar;
-            myProfile.provider = "line";
-          } catch(e) {}
-          localStorage.setItem("SQUAD_UID", myProfile.userId);
-          localStorage.setItem("SQUAD_UNAME", myProfile.name);
-          localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar);
-          localStorage.setItem("SQUAD_AUTH_PROVIDER", "line");
-        } else {
-          if (liff.isInClient()) { liff.login(); return; }
-        }
-      } catch(e) {}
-      updateDashboardUI();
-      renderProjects();
-    }
-    initDashboardLiff();
-
-    function getStoredProjects() { return JSON.parse(localStorage.getItem("SQUAD_PROJECTS") || "[]"); }
-    function saveProjects(list) { localStorage.setItem("SQUAD_PROJECTS", JSON.stringify(list)); renderProjects(); }
-
-    function renderProjects() {
-      const list = getStoredProjects();
-      const container = document.getElementById("projectList");
-      document.getElementById("projectCount").textContent = `${list.length} ${i18n.unitRoom}`;
-      if (!list.length) {
-        container.innerHTML = `<div style="text-align:center; color:#64748b; padding:40px 0;">${i18n.emptyTip}</div>`;
-        return;
-      }
-      container.innerHTML = "";
-      list.forEach((p, idx) => {
-        const enterLink = `LiffMap.html?room=${encodeURIComponent(p.roomId)}`;
-        const card = document.createElement("div");
-        card.className = "project-card";
-        card.innerHTML =
