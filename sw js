@@ -1,20 +1,20 @@
-// Service Worker สำหรับ PWA U-Nhai
-const CACHE_NAME = 'unhai-cache-v1';
+// Service Worker สำหรับ PWA U-Nhai (v2 - Force Purge Stale Cache)
+const CACHE_NAME = 'unhai-cache-v2';
 const ASSETS = [
-  './index.html',
   './dashboard.html',
+  './index.html',
   './LiffMap.html',
   './manifest.json',
   './logo.png'
 ];
 
 self.addEventListener('install', (e) => {
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS).catch(() => {});
+      return cache.addAll(ASSETS).catch((err) => console.log('Cache addAll fail:', err));
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
@@ -31,10 +31,17 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Network first, fallback to cache for HTML
   if (e.request.method === 'GET') {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
+      fetch(e.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(e.request))
     );
   }
 });
