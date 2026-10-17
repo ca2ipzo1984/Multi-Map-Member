@@ -134,13 +134,19 @@
     /* หน้าจอโหลดข้อมูล (Loading Overlay) */
     .loading-overlay {
       position: fixed; inset: 0; z-index: 99999;
-      background: #0b0f19;
+      background: rgba(11, 15, 25, 0.94);
       display: flex; align-items: center; justify-content: center;
       padding: 24px;
-      transition: opacity 0.45s ease, visibility 0.45s ease;
+      pointer-events: none;
+      animation: autoDismissLoader 0.4s ease 1.4s forwards;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
     }
     .loading-overlay.fade-out {
-      opacity: 0; visibility: hidden; pointer-events: none;
+      opacity: 0; visibility: hidden; pointer-events: none; display: none !important;
+    }
+    @keyframes autoDismissLoader {
+      0%, 80% { opacity: 1; visibility: visible; }
+      100% { opacity: 0; visibility: hidden; display: none; }
     }
     .loading-card {
       background: rgba(15, 23, 42, 0.96);
@@ -429,4 +435,1137 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="U-Nhai">
-  <meta na
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="logo.png">
+</head>
+<body style="background:#0b0f19; margin:0; padding:0; overflow:hidden;">
+
+  <!-- หน้าจอโหลดข้อมูลตอนเริ่มเข้าแผนที่ (Auto-dismiss, ปลอดภัย ไม่บล็อกหน้าจอ) -->
+  <div id="mapLoadingScreen" class="loading-overlay">
+    <div class="loading-card">
+      <div class="loading-logo-box">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" style="filter: drop-shadow(0 0 10px rgba(6,199,85,0.7));">
+          <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#06c755" stroke="#ffffff" stroke-width="1.5"/>
+          <circle cx="12" cy="9" r="3" fill="#ffffff"/>
+        </svg>
+        <div class="loading-spinner-ring"></div>
+      </div>
+      <div class="loading-title">หลังจากกดเข้าแมพมา ระบบจะมีการโหลดเข้าแผนที่</div>
+      <div class="loading-sub" id="loadingStatusText">กำลังเชื่อมต่อพิกัดดาวเทียม GPS และข้อมูลกลุ่มสหาย...</div>
+      <div class="loading-bar-track">
+        <div class="loading-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // สคริปต์การันตีการปิดหน้าจอโหลดทันทีโดยไม่พึ่งพาภายนอก
+    setTimeout(function() {
+      var loader = document.getElementById("mapLoadingScreen");
+      if (loader) {
+        loader.classList.add("fade-out");
+        setTimeout(function() { loader.style.display = "none"; }, 350);
+      }
+    }, 1100);
+  </script>
+
+
+  <!-- แถบบน: ซ้าย = ประตูออก + รูปโปรไฟล์ + LED GPS + ชื่อ | ขวา = รหัสห้อง LED + แว่นขยาย -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <a href="dashboard.html" class="btn-exit-door" id="btnExitDoor" title="กลับหน้ารวมห้อง (Dashboard)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </a>
+
+      <div class="user-profile-badge" id="btnProfileHeader" title="จัดการบัญชี (Account)">
+        <div class="avatar-wrapper">
+          <img id="myAvatarImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" referrerpolicy="no-referrer" class="user-avatar-mini">
+          <span class="gps-led-dot red" id="gpsLed" title="กำลังจับสัญญาณ GPS..."></span>
+        </div>
+        <span id="myNameText" class="user-name-text">สหาย</span>
+      </div>
+    </div>
+
+    <div class="top-bar-right">
+      <button class="btn-top-search" id="btnTopSearch" title="ค้นหาสถานที่ปักหมุด">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+      <button class="btn-top-menu" id="btnTopMenu" title="เมนูหลัก (Menu)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dropdown Menu เมนู 3 ขีด ด้านบนขวา -->
+  <div class="top-dropdown-menu" id="topDropdownMenu">
+    <div class="dropdown-header-room">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="font-size:0.75rem;">🏷️</span>
+        <span class="dropdown-room-tag" id="dropdownRoomCode">ROOM-XXXX</span>
+      </div>
+      <button class="btn-dropdown-copy" id="btnCopyRoomDropdown" title="คัดลอกลิงก์แชร์">📋 คัดลอก</button>
+    </div>
+    <div class="dropdown-divider"></div>
+    <div class="dropdown-item" id="menuItemAccount">
+      <span class="dropdown-item-icon">👤</span>
+      <span>จัดการบัญชีผู้ใช้</span>
+    </div>
+    <div class="dropdown-item" id="menuItemSearch">
+      <span class="dropdown-item-icon">🔍</span>
+      <span>ค้นหาจุดนัดพบ / ปักหมุด</span>
+    </div>
+    <div class="dropdown-item" id="menuItemFollow">
+      <span class="dropdown-item-icon">🎯</span>
+      <span id="menuTextFollow">ติดตามตำแหน่งฉัน (เปิด)</span>
+    </div>
+    <div class="dropdown-item" id="menuItemMyLoc">
+      <span class="dropdown-item-icon">📍</span>
+      <span>ซูมไปยังพิกัดของฉัน</span>
+    </div>
+    <div class="dropdown-item" id="menuItemBg">
+      <span class="dropdown-item-icon">🔄</span>
+      <span id="menuTextBg">ส่งพิกัดเบื้องหลัง (เปิด)</span>
+    </div>
+    <div class="dropdown-item" id="menuItemChat">
+      <span class="dropdown-item-icon">💬</span>
+      <span>แชทแก๊งสด (Live Chat)</span>
+    </div>
+    <div class="dropdown-item" id="menuItemShare">
+      <span class="dropdown-item-icon">📤</span>
+      <span>แชร์แผนที่เข้า LINE</span>
+    </div>
+    <div class="dropdown-item" id="menuItemFeedback" style="color:#f59e0b;">
+      <span class="dropdown-item-icon">⚠️</span>
+      <span>แจ้งบั๊ก / เสนอข้อคิดเห็น</span>
+    </div>
+    <div class="dropdown-item" id="menuItemClear" style="color:#ef4444;">
+      <span class="dropdown-item-icon">🧹</span>
+      <span>ล้างหมุดและแชทห้องนี้</span>
+    </div>
+    <div class="dropdown-divider"></div>
+    <div class="dropdown-item" id="menuItemExit" style="color:#38bdf8;">
+      <span class="dropdown-item-icon">🚪</span>
+      <span>ออกจากห้องกลับหน้าหลัก</span>
+    </div>
+  </div>
+
+  <div id="searchTargetBox">
+    <div class="search-input-group">
+      <input type="text" class="search-target-input" id="searchTargetInput" placeholder="🔍 Search places...">
+      <button class="btn-search-go" id="btnSearchTargetGo">ค้นหา</button>
+      <button class="btn-search-close" id="btnSearchTargetClose">✕</button>
+    </div>
+    <div class="search-results-list" id="searchResultsList"></div>
+    <div class="search-manual-tip" id="btnManualPickTip">👉 หรือ แตะบนแผนที่เพื่อปักหมุดเอง</div>
+  </div>
+
+  <div class="fab-group">
+    <button class="btn-fab" id="btnToggleChat" title="Live Chat">
+      💬<span class="chat-badge" id="chatBadge">0</span>
+    </button>
+        <!-- ปุ่มควบคุมโหมดส่งพิกัดเบื้องหลัง (Background GPS Keep-Alive) -->
+    <button class="btn-fab active" id="btnBgMode" title="โหมดส่งพิกัดเบื้องหลัง (พับจอไม่หลุด)">🔄</button>
+    <button class="btn-fab active" id="btnFollowMe" title="Follow Me">🎯</button>
+    <button class="btn-fab" id="btnMyLoc" title="My Location">📍</button>
+    <!-- ปุ่มธงเป้าหมาย: แตะเพื่อปักหมุด / กดค้างเพื่อยกเลิกจุดนัดพบ -->
+    <button class="btn-fab btn-fab-feedback" id="btnOpenFeedback" title="⚠️ แจ้งบั๊ก / เสนอข้อคิดเห็น" style="color:#f59e0b; border-color:#f59e0b; box-shadow:0 4px 12px rgba(245,158,11,0.35);"><span style="font-size:1.2rem;">⚠️</span></button>
+    <button class="btn-fab" id="btnShareLine" title="Share to LINE">📤</button>
+    <button class="btn-fab" id="btnClearGhosts" title="Clear Ghosts" style="background:#7f1d1d; border-color:#ef4444;">🧹</button>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="chatDrawer">
+    <div class="chat-header">
+      <span id="chatHeaderTitle">💬 แชทแก๊งสด (Live Chat)</span>
+      <span style="cursor:pointer; font-size:1.2rem;" id="btnCloseChat">✕</span>
+    </div>
+    <div class="chat-messages" id="chatFeed"></div>
+    <div class="chat-input-bar">
+      <input type="text" class="chat-input" id="chatInput" placeholder="พิมพ์ข้อความในแก๊ง..." maxlength="150">
+      <button class="btn-send" id="btnSendMsg">ส่ง</button>
+    </div>
+  </div>
+
+  <div class="bottom-panel">
+    <div class="target-box" id="targetBox" title="แตะเพื่อนำทาง / กดค้างเพื่อยกเลิกจุดนัดพบ">
+      <div><b id="targetLabelText">🚩 นัดพบ:</b> <span id="targetNameDisplay">ยังไม่ได้กำหนด</span></div>
+      <div id="targetActionText" style="font-size:0.72rem; color:#38bdf8; font-weight:bold;">(แตะเพื่อปักหมุด)</div>
+    </div>
+    <div class="member-scroll" id="memberList"></div>
+  </div>
+
+  <!-- Modal แจ้งบั๊กและเสนอข้อคิดเห็น -->
+  <div id="modalFeedback" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(8px);">
+    <div class="feedback-card">
+      <div class="feedback-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.3rem;">⚠️</span>
+          <span style="font-weight:700; font-size:1rem; color:#f8fafc;">แจ้งบั๊ก / เสนอข้อคิดเห็น</span>
+        </div>
+        <button class="btn-close-feedback" id="btnCloseFeedback">✕</button>
+      </div>
+      <p style="font-size:0.75rem; color:#94a3b8; margin:8px 0 10px; line-height:1.4;">พบปัญหาการใช้งานหรือมีข้อเสนอแนะ พิมพ์บอกทีมงานได้เลยครับ:</p>
+      
+      <div style="margin-bottom:8px;">
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn-fb-type active" id="fbTypeBug">🐛 แจ้งบั๊ก</button>
+          <button type="button" class="btn-fb-type" id="fbTypeIdea">💡 ข้อเสนอแนะ</button>
+          <button type="button" class="btn-fb-type" id="fbTypeOther">💬 สอบถาม</button>
+        </div>
+      </div>
+
+      <textarea id="feedbackText" class="feedback-textarea" placeholder="พิมพ์ข้อความที่นี่ เช่น แผนที่ไม่โหลด, ปุ่มกดไม่ติด, อยากให้เพิ่มฟีเจอร์..." rows="4" maxlength="500"></textarea>
+
+      <div class="feedback-meta" id="feedbackMetaInfo">
+        <span>📍 ห้อง: <b id="fbRoomLabel">...</b></span> | <span>📱 <span id="fbDeviceLabel">อุปกรณ์</span></span>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button class="btn-fb-cancel" id="btnCancelFeedback">ปิด</button>
+        <button class="btn-fb-submit" id="btnSubmitFeedback">🚀 ส่งข้อคิดเห็น</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal บัญชีผู้ใช้ -->
+  <div id="modalAccount" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; padding:20px;">
+    <div class="account-card">
+      <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="acc-avatar" referrerpolicy="no-referrer">
+      <div class="acc-name" id="accModalName">สหาย</div>
+      <div class="acc-id" id="accModalId">สถานะ: บัญชีชั่วคราว</div>
+
+      <div id="accLoginActions">
+        <button class="btn-acc btn-acc-line" id="btnAccLoginLine">
+          <span>💬</span> <span id="btnAccLoginLineText">เข้าสู่ระบบด้วย LINE</span>
+        </button>
+        <button class="btn-acc btn-acc-google" id="btnAccLoginGoogle">
+          <span>🌐</span> <span id="btnAccLoginGoogleText">เข้าสู่ระบบด้วย Google</span>
+        </button>
+      </div>
+
+      <button class="btn-acc btn-acc-logout" id="btnAccLogout">🚪 ออกจากระบบ (Log out)</button>
+      <button class="btn-acc btn-acc-close" id="btnAccCloseModal">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+
+  <script>
+        const MY_LIFF_ID = "2012010620-7LrsLOGx";
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
+    const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+
+    // 0. สถานะระบบและพิกัดเริ่มต้น (Global App State - ประกาศไว้บนสุด ป้องกัน TDZ ReferenceError)
+    var modalAcc = document.getElementById("modalAccount");
+    let myLat = 13.7563, myLng = 100.5018;
+    let hasGps = false, isTargetMode = false, autoFollow = true;
+    let markers = {}, targetMarker = null, currentTarget = null;
+    let accuracyCircle = null;
+    let lastChatCount = 0, isChatOpen = false;
+
+    // ฟังก์ชันอัปเดตดวงไฟ LED สถานะ GPS
+    function updateGpsLed(isReady) {
+      const led = document.getElementById("gpsLed");
+      if (!led) return;
+      if (isReady) {
+        led.className = "gps-led-dot green";
+        led.title = (typeof i18n !== 'undefined' && i18n.gpsReady) ? i18n.gpsReady : "Live GPS Ready";
+      } else {
+        led.className = "gps-led-dot red";
+        led.title = (typeof i18n !== 'undefined' && i18n.gpsOff) ? i18n.gpsOff : "GPS Disabled";
+      }
+    }
+
+    // 1. ตรวจจับภาษาเริ่มต้นของเครื่องอย่างละเอียด (Default Device Language Detection)
+    const rawLang = (navigator.languages && navigator.languages.length ? navigator.languages[0] : (navigator.language || navigator.userLanguage || "th")).toLowerCase();
+    const isThai = rawLang.startsWith("th");
+
+    const dict = {
+      th: {
+        title: "U-Nhai",
+        gpsReady: "📡 GPS สดพร้อม",
+        gpsOff: "⚠️ ไม่เปิด GPS",
+        searchPlaceholder: "🔍 พิมพ์ชื่อสถานที่ (เช่น สยาม, เซ็นทรัล)...",
+        searchBtn: "ค้นหา",
+        tapToPinTip: "👉 หรือ แตะบนแผนที่เพื่อปักหมุดเอง",
+        searching: "🔍 กำลังค้นหา",
+        notFound: "❌ ไม่พบสถานที่ ลองใช้คำค้นหาอื่น",
+        searchErr: "เกิดข้อผิดพลาดในการค้นหา ลองอีกครั้ง",
+        chatHeader: "💬 แชทแก๊งสด (Live Chat)",
+        chatPlaceholder: "พิมพ์ข้อความในแก๊ง...",
+        sendBtn: "ส่ง",
+        targetLabel: "🚩 นัดพบ:",
+        targetNone: "ยังไม่ได้กำหนด",
+        targetTapToPin: "(แตะเพื่อปักหมุด / กดค้างเพื่อยกเลิก)",
+        targetNavMaps: "🚗 นำทางด้วย Google Maps",
+        targetNavBtn: "🚗 นำทางไปยังจุดนัดพบ",
+        targetPrompt: "🚩 ตั้งชื่อจุดนัดพบนี้:",
+        targetDefault: "จุดนัดพบแก๊ง",
+        targetPinned: "ปักหมุดจุดนัดพบที่",
+        targetCancelConfirm: "ต้องการยกเลิกและลบจุดนัดพบนี้ใช่หรือไม่?",
+        targetCancelled: "✅ ยกเลิกจุดนัดพบเรียบร้อยแล้ว",
+        targetNoActive: "ยังไม่มีการตั้งจุดนัดพบ",
+        clearGhostsConfirm: "ต้องการล้างหมุดผีและแชทของห้อง [ROOM] ใช่หรือไม่?",
+        clearGhostsDone: "✅ ล้างห้องนี้เกลี้ยงแล้ว!",
+        copied: "คัดลอกลิงก์ส่งเข้า LINE กลุ่มได้เลย:\n",
+        accTemp: "⚠️ บัญชีชั่วคราว (กดล็อกอินด้านล่าง)",
+        accLogged: "● บัญชี:",
+        loginLine: "เข้าสู่ระบบด้วย LINE",
+        loginGoogle: "เข้าสู่ระบบด้วย Google",
+        logoutBtn: "🚪 ออกจากระบบ (Log out)",
+        closeModal: "ปิดหน้าต่าง",
+        logoutConfirm: "ต้องการออกจากระบบ (Log out) ใช่หรือไม่?\nหมุดของคุณจะถูกเคลียร์และเริ่มเซสชันใหม่",
+        logoutDone: "ออกจากระบบเรียบร้อย",
+        googlePrompt: "กรอกชื่อหรืออีเมล Google สำหรับแสดงตัวตนในแผนที่:",
+        loggedAs: "เข้าสู่ระบบในชื่อ",
+        guestName: "สหาย",
+        meLabel: "(ฉัน)",
+        awayLabel: "ห่าง",
+        mUnit: "ม.",
+        kmUnit: "กม."
+      },
+      en: {
+        title: "U-Nhai",
+        gpsReady: "📡 Live GPS Ready",
+        gpsOff: "⚠️ GPS Disabled",
+        searchPlaceholder: "🔍 Search places (e.g. Central, Mall, Airport)...",
+        searchBtn: "Search",
+        tapToPinTip: "👉 Or tap anywhere on map to pin",
+        searching: "🔍 Searching",
+        notFound: "❌ Place not found, try another keyword",
+        searchErr: "Search error, please try again",
+        chatHeader: "💬 Squad Live Chat",
+        chatPlaceholder: "Type message to squad...",
+        sendBtn: "Send",
+        targetLabel: "🚩 Rendezvous:",
+        targetNone: "Not set yet",
+        targetTapToPin: "(Tap to pin / Long-press to cancel)",
+        targetNavMaps: "🚗 Navigate with Google Maps",
+        targetNavBtn: "🚗 Navigate to Rendezvous",
+        targetPrompt: "🚩 Name this rendezvous point:",
+        targetDefault: "Squad Meetup",
+        targetPinned: "Pinned rendezvous at",
+        targetCancelConfirm: "Do you want to cancel and clear this rendezvous point?",
+        targetCancelled: "✅ Rendezvous point cleared successfully",
+        targetNoActive: "No rendezvous point set yet",
+        clearGhostsConfirm: "Do you want to clear ghost pins and chat for room [ROOM]?",
+        clearGhostsDone: "✅ Cleared room completely!",
+        copied: "Room link copied to clipboard:\n",
+        accTemp: "⚠️ Temporary Account (Log in below)",
+        accLogged: "● Account:",
+        loginLine: "Log in with LINE",
+        loginGoogle: "Log in with Google",
+        logoutBtn: "🚪 Log out",
+        closeModal: "Close",
+        logoutConfirm: "Do you want to log out?\nYour pin will be cleared and session reset.",
+        logoutDone: "Logged out successfully",
+        googlePrompt: "Enter your name or Google email for identity on map:",
+        loggedAs: "Logged in as",
+        guestName: "Guest",
+        meLabel: "(Me)",
+        awayLabel: "Away",
+        mUnit: "m",
+        kmUnit: "km"
+      }
+    };
+
+    const i18n = isThai ? dict.th : dict.en;
+
+    // นำเข้าข้อความภาษาเครื่องเข้าสู่ DOM ทั้งหมด
+    function applyI18nToDOM() {
+      document.title = i18n.title;
+      updateGpsLed(hasGps);
+      const sInput = document.getElementById("searchTargetInput");
+      if (sInput) sInput.placeholder = i18n.searchPlaceholder;
+      const sBtn = document.getElementById("btnSearchTargetGo");
+      if (sBtn) sBtn.textContent = i18n.searchBtn;
+      const mTip = document.getElementById("btnManualPickTip");
+      if (mTip) mTip.textContent = i18n.tapToPinTip;
+      const cHeader = document.getElementById("chatHeaderTitle");
+      if (cHeader) cHeader.textContent = i18n.chatHeader;
+      const cInput = document.getElementById("chatInput");
+      if (cInput) cInput.placeholder = i18n.chatPlaceholder;
+      const cSend = document.getElementById("btnSendMsg");
+      if (cSend) cSend.textContent = i18n.sendBtn;
+      const tLabel = document.getElementById("targetLabelText");
+      if (tLabel) tLabel.textContent = i18n.targetLabel;
+      const tName = document.getElementById("targetNameDisplay");
+      if (tName) tName.textContent = i18n.targetNone;
+      const tAct = document.getElementById("targetActionText");
+      if (tAct) tAct.textContent = i18n.targetTapToPin;
+      const bLine = document.getElementById("btnAccLoginLineText");
+      if (bLine) bLine.textContent = i18n.loginLine;
+      const bG = document.getElementById("btnAccLoginGoogleText");
+      if (bG) bG.textContent = i18n.loginGoogle;
+      const bLogout = document.getElementById("btnAccLogout");
+      if (bLogout) bLogout.textContent = i18n.logoutBtn;
+      const bClose = document.getElementById("btnAccCloseModal");
+      if (bClose) bClose.textContent = i18n.closeModal;
+    }
+    applyI18nToDOM();
+
+    const currentRoomId = new URLSearchParams(window.location.search).get("room") || "default";
+    const dropdownRoomCode = document.getElementById("dropdownRoomCode");
+    if (dropdownRoomCode) dropdownRoomCode.textContent = currentRoomId;
+    const fbRoomLabel = document.getElementById("fbRoomLabel");
+    if (fbRoomLabel) fbRoomLabel.textContent = currentRoomId;
+
+    const btnCopyRoomDropdown = document.getElementById("btnCopyRoomDropdown");
+    if (btnCopyRoomDropdown) {
+      btnCopyRoomDropdown.onclick = (e) => {
+        e.stopPropagation();
+        const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${currentRoomId}`;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            alert((isThai ? "📋 คัดลอกลิงก์ห้อง " : "📋 Copied room link ") + `[${currentRoomId}]\n` + shareUrl);
+          }).catch(() => {
+            alert((isThai ? "ห้อง: " : "Room: ") + currentRoomId);
+          });
+        }
+      };
+    }
+
+    let myUserId = localStorage.getItem("SQUAD_UID") || ("U_" + Date.now().toString().slice(-6));
+    localStorage.setItem("SQUAD_UID", myUserId);
+
+    let myName = localStorage.getItem("SQUAD_UNAME") || (i18n.guestName + "_" + myUserId.slice(-4));
+    let myAvatar = localStorage.getItem("SQUAD_UAVATAR") || DEFAULT_AVATAR;
+    let authProvider = localStorage.getItem("SQUAD_AUTH_PROVIDER") || "";
+    let isLoggedIn = !!authProvider;
+
+// [State moved to top]
+
+    // แผนที่ Leaflet (OpenStreetMap มาตรฐานโลก พร้อมระบบป้องกัน Error)
+    let map = null;
+    try {
+      if (typeof L !== 'undefined') {
+        map = L.map("map", { zoomControl: false, attributionControl: false }).setView([myLat, myLng], 17);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+        setTimeout(() => { if (map) map.invalidateSize(); }, 300);
+        window.addEventListener("resize", () => { if (map) map.invalidateSize(); });
+      }
+    } catch(err) {
+      console.warn("Leaflet init error:", err);
+    }
+
+    function openGoogleMapsNav(destLat, destLng) {
+      window.open(`https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLng}&destination=${destLat},${destLng}&travelmode=driving`, "_blank");
+    }
+
+    // ========================================================
+    // 🚀 ระบบจัดการหน้าจอโหลดแผนที่ (Loading Screen Overlay)
+    // ========================================================
+    function dismissLoadingScreen() {
+      const loader = document.getElementById("mapLoadingScreen");
+      if (!loader) return;
+      loader.classList.add("fade-out");
+      setTimeout(() => { loader.style.display = "none"; }, 450);
+    }
+    // ปิดหน้าจอโหลดเมื่อพร้อม หรือไม่เกิน 1.2 วินาทีเพื่อความลื่นไหล
+    setTimeout(dismissLoadingScreen, 1200);
+
+    // ========================================================
+    // ☰ ระบบเมนู 3 ขีด และ Dropdown Menu
+    // ========================================================
+    const btnTopMenu = document.getElementById("btnTopMenu");
+    const topDropdownMenu = document.getElementById("topDropdownMenu");
+
+    function closeDropdown() {
+      if (topDropdownMenu) topDropdownMenu.style.display = "none";
+      if (btnTopMenu) btnTopMenu.classList.remove("active");
+    }
+
+    if (btnTopMenu && topDropdownMenu) {
+      btnTopMenu.onclick = (e) => {
+        e.stopPropagation();
+        const isOpen = topDropdownMenu.style.display === "flex";
+        topDropdownMenu.style.display = isOpen ? "none" : "flex";
+        btnTopMenu.classList.toggle("active", !isOpen);
+      };
+
+      document.addEventListener("click", (e) => {
+        if (!topDropdownMenu.contains(e.target) && e.target !== btnTopMenu) {
+          closeDropdown();
+        }
+      });
+    }
+
+    // ผูกคำสั่งของทุกตัวเลือกใน Dropdown Menu
+    document.getElementById("menuItemAccount").onclick = () => { closeDropdown(); updateUserUI(); modalAcc.style.display = "flex"; };
+    document.getElementById("menuItemSearch").onclick = () => { closeDropdown(); openSearchBox(); };
+    document.getElementById("menuItemFollow").onclick = () => { closeDropdown(); document.getElementById("btnFollowMe").click(); };
+    document.getElementById("menuItemMyLoc").onclick = () => { closeDropdown(); document.getElementById("btnMyLoc").click(); };
+    document.getElementById("menuItemBg").onclick = () => { closeDropdown(); document.getElementById("btnBgMode").click(); };
+    document.getElementById("menuItemChat").onclick = () => { closeDropdown(); document.getElementById("btnToggleChat").click(); };
+    document.getElementById("menuItemShare").onclick = () => { closeDropdown(); document.getElementById("btnShareLine").click(); };
+    document.getElementById("menuItemFeedback").onclick = () => { closeDropdown(); openFeedbackModal(); };
+    document.getElementById("menuItemClear").onclick = () => { closeDropdown(); document.getElementById("btnClearGhosts").click(); };
+    document.getElementById("menuItemExit").onclick = () => { closeDropdown(); window.location.href = "dashboard.html"; };
+
+    // ========================================================
+    // ⚠️ ระบบแจ้งบั๊กและเสนอข้อคิดเห็น (Bug Report & Feedback)
+    // ========================================================
+    const modalFb = document.getElementById("modalFeedback");
+    let currentFbType = "bug";
+
+    function openFeedbackModal() {
+      if (fbRoomLabel) fbRoomLabel.textContent = currentRoomId;
+      const devLabel = document.getElementById("fbDeviceLabel");
+      if (devLabel) {
+        const isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        devLabel.textContent = `${window.innerWidth}x${window.innerHeight} (${isMob ? "Mobile" : "Desktop/Tablet"})`;
+      }
+      modalFb.style.display = "flex";
+      setTimeout(() => { document.getElementById("feedbackText").focus(); }, 120);
+    }
+
+    function closeFeedbackModal() {
+      if (modalFb) modalFb.style.display = "none";
+    }
+
+    const btnOpenFb = document.getElementById("btnOpenFeedback");
+    if (btnOpenFb) {
+      btnOpenFb.onclick = (e) => {
+        e.stopPropagation();
+        openFeedbackModal();
+      };
+    }
+
+    document.getElementById("btnCloseFeedback").onclick = closeFeedbackModal;
+    document.getElementById("btnCancelFeedback").onclick = closeFeedbackModal;
+    modalFb.onclick = (e) => { if (e.target === modalFb) closeFeedbackModal(); };
+
+    ['fbTypeBug', 'fbTypeIdea', 'fbTypeOther'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.onclick = () => {
+          ['fbTypeBug', 'fbTypeIdea', 'fbTypeOther'].forEach(b => document.getElementById(b).classList.remove("active"));
+          btn.classList.add("active");
+          currentFbType = id.replace("fbType", "").toLowerCase();
+        };
+      }
+    });
+
+    document.getElementById("btnSubmitFeedback").onclick = async () => {
+      const text = document.getElementById("feedbackText").value.trim();
+      if (!text) {
+        alert(isThai ? "กรุณากรอกข้อความข้อคิดเห็นหรือปัญหาที่พบก่อนส่งครับ" : "Please enter your feedback before sending.");
+        return;
+      }
+      const fbPayload = {
+        action: "feedback",
+        type: currentFbType,
+        message: text,
+        roomId: currentRoomId,
+        userId: myUserId,
+        userName: myName,
+        screen: `${window.innerWidth}x${window.innerHeight}`,
+        userAgent: navigator.userAgent,
+        time: new Date().toISOString()
+      };
+      try {
+        const stored = JSON.parse(localStorage.getItem("SQUAD_FEEDBACKS") || "[]");
+        stored.push(fbPayload);
+        localStorage.setItem("SQUAD_FEEDBACKS", JSON.stringify(stored));
+        if (BACKEND_URL) {
+          fetch(BACKEND_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(fbPayload)
+          }).catch(() => {});
+        }
+      } catch(e) {}
+      alert(isThai ? "✅ ส่งข้อคิดเห็นเรียบร้อยแล้ว!\nขอบคุณสำหรับข้อมูล ทีมงานจะนำไปพัฒนาปรับปรุงให้ดียิ่งขึ้นครับ" : "✅ Feedback submitted! Thank you.");
+      document.getElementById("feedbackText").value = "";
+      closeFeedbackModal();
+    };
+
+    // ฟังก์ชันเชื่อมต่อ LIFF
+    async function initFastLiff() {
+      try {
+        if (typeof liff === "undefined") { updateUserUI(); return; }
+        await liff.init({ liffId: MY_LIFF_ID });
+
+        if (liff.isLoggedIn()) {
+          try {
+            const p = await liff.getProfile();
+            myUserId = p.userId;
+            myName = p.displayName || myName;
+            myAvatar = p.pictureUrl || myAvatar;
+            authProvider = "line";
+            isLoggedIn = true;
+          } catch(e) {}
+          localStorage.setItem("SQUAD_UID", myUserId);
+          localStorage.setItem("SQUAD_UNAME", myName);
+          localStorage.setItem("SQUAD_UAVATAR", myAvatar);
+          localStorage.setItem("SQUAD_AUTH_PROVIDER", "line");
+        } else {
+          const savedProv = localStorage.getItem("SQUAD_AUTH_PROVIDER");
+          const savedUid = localStorage.getItem("SQUAD_UID");
+          if (savedProv === "google" && savedUid) {
+            authProvider = "google";
+            isLoggedIn = true;
+          } else if (!savedUid || savedUid.startsWith("U_")) {
+            liff.login({ redirectUri: window.location.href });
+            return;
+          }
+        }
+      } catch(err) { console.warn("LIFF error:", err); }
+
+      updateUserUI();
+      if (hasGps) { renderMyMarker(myLat, myLng, true); syncSquadLocation(); }
+    }
+    initFastLiff();
+
+    function updateUserUI() {
+      document.getElementById("myNameText").textContent = myName;
+      document.getElementById("myAvatarImg").src = myAvatar;
+      document.getElementById("accModalAvatar").src = myAvatar;
+      document.getElementById("accModalName").textContent = myName;
+
+      const accIdEl = document.getElementById("accModalId");
+      const loginActions = document.getElementById("accLoginActions");
+      const btnLogout = document.getElementById("btnAccLogout");
+
+      if (isLoggedIn) {
+        accIdEl.innerHTML = `<span style="color:#06c755; font-weight:bold;">● ${i18n.accLogged} ${authProvider === "line" ? "LINE" : "Google"} (${myUserId.slice(-6)})</span>`;
+        loginActions.style.display = "none";
+        btnLogout.style.display = "block";
+      } else {
+        accIdEl.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">${i18n.accTemp}</span>`;
+        loginActions.style.display = "block";
+        btnLogout.style.display = "none";
+      }
+    }
+
+    function renderMyMarker(lat, lng, forceUpdate = false, bubbleText = "") {
+      const bubbleHtml = bubbleText ? `<div class="speech-bubble">💬 ${bubbleText}</div>` : "";
+      const pinHtml = `<div class="line-user-pin">${bubbleHtml}<span class="pin-name">${myName} ${i18n.meLabel}</span><br><img src="${myAvatar}" class="pin-img" onerror="this.src='${DEFAULT_AVATAR}'"></div>`;
+
+      if (!markers[myUserId]) {
+        markers[myUserId] = L.marker([lat, lng], {
+          icon: L.divIcon({ html: pinHtml, className: "", iconSize: [44, 55], iconAnchor: [22, 50] }),
+          zIndexOffset: 1000
+        }).addTo(map);
+      } else {
+        markers[myUserId].setLatLng([lat, lng]);
+        if (forceUpdate || bubbleText) markers[myUserId].setIcon(L.divIcon({ html: pinHtml, className: "", iconSize: [44, 55], iconAnchor: [22, 50] }));
+      }
+
+      if (!accuracyCircle) accuracyCircle = L.circle([lat, lng], { radius: 15, color: "#06c755", fillOpacity: 0.15 }).addTo(map);
+      else accuracyCircle.setLatLng([lat, lng]);
+    }
+
+    function renderFriendMarker(member) {
+      const uid = member.userId;
+      const hasRecentMsg = member.lastMsg && (Date.now() - member.lastMsgTime < 15000);
+      const bubbleHtml = hasRecentMsg ? `<div class="speech-bubble">💬 ${member.lastMsg}</div>` : "";
+      const avatarSrc = member.avatar || DEFAULT_AVATAR;
+
+      const pinHtml = `<div class="line-user-pin">${bubbleHtml}<span class="pin-name friend-name">${member.name}</span><br><img src="${avatarSrc}" class="pin-img friend-pin" onerror="this.src='${DEFAULT_AVATAR}'"></div>`;
+      const popupContent = `<div style="text-align:center; color:#1e293b; padding:4px;"><b>${member.name}</b><br><span style="font-size:0.75rem; color:#64748b;">${i18n.awayLabel}: ${getDistanceText(myLat, myLng, member.lat, member.lng)}</span><br><a href="javascript:void(0)" onclick="openGoogleMapsNav(${member.lat}, ${member.lng})" class="nav-btn">${i18n.targetNavMaps}</a></div>`;
+
+      if (!markers[uid]) {
+        markers[uid] = L.marker([member.lat, member.lng], { icon: L.divIcon({ html: pinHtml, className: "", iconSize: [44, 55], iconAnchor: [22, 50] }) }).addTo(map).bindPopup(popupContent);
+      } else {
+        markers[uid].setLatLng([member.lat, member.lng]);
+        markers[uid].setIcon(L.divIcon({ html: pinHtml, className: "", iconSize: [44, 55], iconAnchor: [22, 50] }));
+        markers[uid].setPopupContent(popupContent);
+      }
+    }
+
+    async function syncSquadLocation(pendingTarget, chatMessage) {
+      if (!hasGps || !BACKEND_URL) return;
+      try {
+        const payload = { roomId: currentRoomId, userId: myUserId, name: myName, avatar: myAvatar, lat: myLat, lng: myLng };
+        if (pendingTarget) payload.setTarget = pendingTarget;
+        if (chatMessage) payload.chatMsg = chatMessage;
+
+        const res = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data && data.members) updateRosterAndMap(data.members);
+        if (data && data.target) renderTarget(data.target);
+        if (data && data.chat) updateChatFeed(data.chat);
+      } catch(e) {}
+    }
+
+    function updateChatFeed(messages) {
+      const feed = document.getElementById("chatFeed");
+      feed.innerHTML = "";
+      messages.forEach(m => {
+        const isMine = m.userId === myUserId;
+        const row = document.createElement("div");
+        row.className = `chat-bubble ${isMine ? "mine" : ""}`;
+        row.innerHTML = `<img src="${m.avatar || DEFAULT_AVATAR}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; flex-shrink:0;" onerror="this.src='${DEFAULT_AVATAR}'"><div><div style="font-size:0.68rem; color:#94a3b8;">${m.name}</div><div class="chat-bubble-text">${m.text}</div></div>`;
+        feed.appendChild(row);
+      });
+      feed.scrollTop = feed.scrollHeight;
+      if (!isChatOpen && messages.length > lastChatCount) {
+        document.getElementById("chatBadge").style.display = "block";
+        document.getElementById("chatBadge").textContent = (messages.length - lastChatCount);
+      }
+      lastChatCount = messages.length;
+    }
+
+    function getDistanceText(lat1, lon1, lat2, lon2) {
+      if (!lat1 || !lat2) return "-";
+      const d = getDistance(lat1, lon1, lat2, lon2);
+      return d < 1 ? (d * 1000).toFixed(0) + ` ${i18n.mUnit}` : d.toFixed(1) + ` ${i18n.kmUnit}`;
+    }
+
+    function updateRosterAndMap(membersList) {
+      const listEl = document.getElementById("memberList");
+      listEl.innerHTML = "";
+      renderMyMarker(myLat, myLng);
+
+      const myCard = document.createElement("div");
+      myCard.className = "member-card is-me";
+      myCard.onclick = () => { autoFollow = true; map.setView([myLat, myLng], 17); };
+      myCard.innerHTML = `<img src="${myAvatar}" class="member-card-img" onerror="this.src='${DEFAULT_AVATAR}'"><div><div><b>${myName}</b> ${i18n.meLabel}</div><div style="color:#06c755; font-size:0.65rem;">🎯 ${i18n.targetLabel} ${currentTarget ? getDistanceText(myLat, myLng, currentTarget.lat, currentTarget.lng) : "-"}</div></div>`;
+      listEl.appendChild(myCard);
+
+      membersList.forEach(m => {
+        if (m.userId === myUserId) return;
+        renderFriendMarker(m);
+        const card = document.createElement("div");
+        card.className = "member-card is-friend";
+        card.onclick = () => { autoFollow = false; document.getElementById("btnFollowMe").classList.remove("active"); map.setView([m.lat, m.lng], 17); if (markers[m.userId]) markers[m.userId].openPopup(); };
+        card.innerHTML = `<img src="${m.avatar || DEFAULT_AVATAR}" class="member-card-img" onerror="this.src='${DEFAULT_AVATAR}'"><div><div><b>${m.name}</b></div><div style="color:#38bdf8; font-size:0.65rem;">📍 ${i18n.awayLabel} ${getDistanceText(myLat, myLng, m.lat, m.lng)}</div></div>`;
+        listEl.appendChild(card);
+      });
+    }
+
+// [updateGpsLed declared above]
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.watchPosition((pos) => {
+        myLat = pos.coords.latitude; myLng = pos.coords.longitude;
+        updateGpsLed(true);
+        if (!hasGps) { hasGps = true; map.setView([myLat, myLng], 17); map.invalidateSize(); }
+        renderMyMarker(myLat, myLng);
+        if (autoFollow) map.panTo([myLat, myLng], { animate: true, duration: 0.5 });
+        syncSquadLocation();
+      }, (err) => {
+        updateGpsLed(false);
+      }, { enableHighAccuracy: true, maximumAge: 0, timeout: 8000 });
+    }
+
+    setInterval(() => { syncSquadLocation(); }, 3000);
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    function renderTarget(t) {
+      currentTarget = t;
+      const label = document.getElementById("targetNameDisplay");
+      const actionText = document.getElementById("targetActionText");
+      if (!t || !t.lat) {
+        label.textContent = i18n.targetNone; actionText.textContent = i18n.targetTapToPin;
+        actionText.style.color = "#38bdf8";
+        if (targetMarker) map.removeLayer(targetMarker);
+        return;
+      }
+      let distText = getDistanceText(myLat, myLng, t.lat, t.lng);
+      label.textContent = `${t.name} (${distText})`;
+      actionText.textContent = i18n.targetNavMaps; actionText.style.color = "#22c55e";
+
+      const popupTarget = `<div style="text-align:center; color:#1e293b; padding:4px;"><b>${i18n.targetLabel} ${t.name}</b><br><span style="font-size:0.75rem; color:#64748b;">${t.by} (${i18n.awayLabel} ${distText})</span><br><a href="javascript:void(0)" onclick="openGoogleMapsNav(${t.lat}, ${t.lng})" class="nav-btn" style="background:#ef4444;">${i18n.targetNavBtn}</a><br><a href="javascript:void(0)" onclick="cancelRendezvousTarget()" style="display:inline-block; margin-top:6px; color:#ef4444; font-size:0.75rem; font-weight:bold; text-decoration:underline;">❌ ยกเลิกจุดนัดพบ</a></div>`;
+      if (!targetMarker) {
+        targetMarker = L.marker([t.lat, t.lng], { icon: L.divIcon({ html: '<span style="font-size:2rem;">🚩</span>', className: "", iconSize: [36, 36], iconAnchor: [18, 30] }) }).addTo(map).bindPopup(popupTarget);
+      } else {
+        targetMarker.setLatLng([t.lat, t.lng]); targetMarker.setPopupContent(popupTarget);
+      }
+    }
+
+    // 🚩 2. ฟังก์ชันยกเลิกจุดนัดพบ (Cancel Target Rendezvous)
+    window.cancelRendezvousTarget = async function() {
+      if (!currentTarget || !currentTarget.lat) {
+        alert(i18n.targetNoActive);
+        return;
+      }
+      if (confirm(i18n.targetCancelConfirm)) {
+        const emptyTarget = { name: "", lat: 0, lng: 0, by: "" };
+        renderTarget(emptyTarget);
+        await syncSquadLocation(emptyTarget);
+        alert(i18n.targetCancelled);
+      }
+    };
+
+    // ตัวจัดการตรวจจับการกดค้าง (Long-Press Handler รองรับทั้ง Touch บนมือถือ และ Click บนคอม)
+    function attachLongPress(element, onLongPress, onClick) {
+      let pressTimer = null;
+      let isLongPressed = false;
+      let startX = 0, startY = 0;
+      let touchHandled = false;
+
+      element.addEventListener("touchstart", (e) => {
+        touchHandled = true;
+        isLongPressed = false;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        pressTimer = setTimeout(() => {
+          isLongPressed = true;
+          if (navigator.vibrate) navigator.vibrate(60);
+          onLongPress(e);
+        }, 600);
+      }, { passive: true });
+
+      element.addEventListener("touchmove", (e) => {
+        const dx = Math.abs(e.touches[0].clientX - startX);
+        const dy = Math.abs(e.touches[0].clientY - startY);
+        if (dx > 10 || dy > 10) clearTimeout(pressTimer);
+      }, { passive: true });
+
+      element.addEventListener("touchend", (e) => {
+        clearTimeout(pressTimer);
+        if (!isLongPressed && onClick) {
+          onClick(e);
+        }
+        setTimeout(() => { touchHandled = false; }, 400);
+      });
+
+      element.addEventListener("mousedown", (e) => {
+        if (touchHandled) return;
+        isLongPressed = false;
+        pressTimer = setTimeout(() => {
+          isLongPressed = true;
+          onLongPress(e);
+        }, 600);
+      });
+
+      element.addEventListener("mouseup", (e) => {
+        if (touchHandled) return;
+        clearTimeout(pressTimer);
+        if (!isLongPressed && onClick) onClick(e);
+      });
+
+      element.addEventListener("mouseleave", () => {
+        clearTimeout(pressTimer);
+      });
+    }
+
+    // แถบเป้าหมายด้านล่าง: แตะเพื่อนำทาง / กดค้างเพื่อยกเลิกจุดนัดพบ
+    attachLongPress(document.getElementById("targetBox"), 
+      () => { cancelRendezvousTarget(); }, 
+      () => {
+        if (currentTarget && currentTarget.lat) openGoogleMapsNav(currentTarget.lat, currentTarget.lng);
+        else document.getElementById("btnSetTarget").click();
+      }
+    );
+
+    // [ปุ่มธงเปลี่ยนเป็นปุ่มแจ้งบั๊ก ⚠️ และระบบปักหมุดใช้งานผ่านปุ่มแว่นขยาย / แถบเป้าหมายด้านล่าง]
+
+    document.getElementById("btnFollowMe").onclick = () => {
+      autoFollow = !autoFollow;
+      document.getElementById("btnFollowMe").classList.toggle("active", autoFollow);
+      const mFollow = document.getElementById("menuTextFollow");
+      if (mFollow) mFollow.textContent = autoFollow ? (isThai ? "ติดตามตำแหน่งฉัน (เปิด)" : "Follow Me (On)") : (isThai ? "ติดตามตำแหน่งฉัน (ปิด)" : "Follow Me (Off)");
+      if (autoFollow && hasGps) map.setView([myLat, myLng], 17);
+    };
+
+    document.getElementById("btnMyLoc").onclick = () => {
+      if (hasGps) { autoFollow = true; document.getElementById("btnFollowMe").classList.add("active"); map.setView([myLat, myLng], 17); }
+    };
+
+    if (map) { map.on("dragstart", () => { autoFollow = false; document.getElementById("btnFollowMe").classList.remove("active"); }); }
+
+    const searchTargetBox = document.getElementById("searchTargetBox");
+    const searchTargetInput = document.getElementById("searchTargetInput");
+    const searchResultsList = document.getElementById("searchResultsList");
+
+    // 🛡️ ป้องกัน Leaflet กลืน Touch/Click และอนุญาตให้พิมพ์ค้นหาต่อเนื่องได้ตลอดเวลา
+    if (typeof L !== 'undefined' && L.DomEvent) {
+      L.DomEvent.disableClickPropagation(searchTargetBox);
+      L.DomEvent.disableScrollPropagation(searchTargetBox);
+    }
+
+    // ฟังก์ชันเปิด/ปิด/สลับกล่องค้นหา
+    function openSearchBox() {
+      searchTargetBox.style.display = "flex";
+      const btnSearch = document.getElementById("btnTopSearch");
+      if (btnSearch) btnSearch.classList.add("active");
+      setTimeout(() => {
+        searchTargetInput.focus();
+      }, 100);
+    }
+
+    function closeSearchBox() {
+      searchTargetBox.style.display = "none";
+      const btnSearch = document.getElementById("btnTopSearch");
+      if (btnSearch) btnSearch.classList.remove("active");
+      isTargetMode = false;
+      // btnSetTarget removed
+    }
+
+    function toggleSearchBox() {
+      const isHidden = (searchTargetBox.style.display === "none" || !searchTargetBox.style.display);
+      if (isHidden) {
+        openSearchBox();
+      } else {
+        if (document.activeElement !== searchTargetInput) {
+          searchTargetInput.focus();
+        } else {
+          closeSearchBox();
+        }
+      }
+    }
+
+    // เชื่อมต่อปุ่มแว่นขยายบน Top Bar
+    const btnTopSearch = document.getElementById("btnTopSearch");
+    if (btnTopSearch) {
+      btnTopSearch.onclick = (e) => {
+        e.stopPropagation();
+        toggleSearchBox();
+      };
+    }
+
+    // จัดการการแตะ/คลิกในช่อง input ให้โฟกัสและพิมพ์ได้เสมอไม่ว่าจะกดกี่ครั้ง
+    searchTargetInput.addEventListener("click", (e) => {
+      e.stopPropagation();
+      searchTargetInput.focus();
+    });
+    searchTargetInput.addEventListener("touchstart", (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+
+    document.getElementById("btnSearchTargetClose").onclick = (e) => {
+      e.stopPropagation();
+      closeSearchBox();
+    };
+
+    function setRendezvousPoint(name, lat, lon) {
+      searchTargetBox.style.display = "none";
+      autoFollow = false;
+      document.getElementById("btnFollowMe").classList.remove("active");
+      map.flyTo([lat, lon], 17, { duration: 1.2 });
+      const newTarget = { name: name, lat: lat, lng: lon, by: myName };
+      renderTarget(newTarget);
+      syncSquadLocation(newTarget);
+      alert(`✅ ${i18n.targetPinned} [${name}]`);
+    }
+
+    async function executePlaceSearch() {
+      const q = searchTargetInput.value.trim();
+      if (!q) return;
+      searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#94a3b8;">${i18n.searching} "${q}"...</div>`;
+
+      // ตัวเลือกปักหมุดตรงพิกัดปัจจุบันด้วยชื่อนี้ทันที (เป็นตัวเลือกสำรองกันเหนียว)
+      function renderDirectPinOption() {
+        const directDiv = document.createElement("div");
+        directDiv.className = "search-result-item";
+        directDiv.style.border = "1px dashed #06c755";
+        directDiv.style.background = "rgba(6,199,85,0.12)";
+        directDiv.innerHTML = `<b>🚩 ปักหมุดที่นี่ด้วยชื่อ "${q}"</b><div style="font-size:0.65rem; color:#38bdf8;">แตะเพื่อใช้พิกัดปัจจุบันของคุณหรือกึ่งกลางแผนที่</div>`;
+        directDiv.onclick = (e) => {
+          e.stopPropagation();
+          const targetCoords = (hasGps && myLat && myLng) ? { lat: myLat, lng: myLng } : map.getCenter();
+          setRendezvousPoint(q, targetCoords.lat, targetCoords.lng);
+        };
+        searchResultsList.appendChild(directDiv);
+      }
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=th&limit=5&addressdetails=1`;
+        const res = await fetch(url, { headers: { "Accept-Language": isThai ? "th,en" : "en,th" } });
+        const data = await res.json();
+        searchResultsList.innerHTML = "";
+        
+        if (data && data.length) {
+          data.forEach(item => {
+            const lat = parseFloat(item.lat);
+            const lon = parseFloat(item.lon);
+            const shortName = item.name || item.display_name.split(",")[0];
+            const div = document.createElement("div");
+            div.className = "search-result-item";
+            div.innerHTML = `<b>📍 ${shortName}</b><div style="font-size:0.65rem; color:#94a3b8;">${item.display_name.substring(0, 60)}...</div>`;
+            div.onclick = (e) => {
+              e.stopPropagation();
+              setRendezvousPoint(shortName, lat, lon);
+            };
+            searchResultsList.appendChild(div);
+          });
+        }
+        // แนบตัวเลือกปักหมุดตรงชื่อนี้ไว้ด้านล่างเสมอ
+        renderDirectPinOption();
+      } catch (err) {
+        searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#ef4444;">${i18n.searchErr}</div>`;
+        renderDirectPinOption();
+      }
+    }
+
+    document.getElementById("btnSearchTargetGo").onclick = (e) => { e.stopPropagation(); executePlaceSearch(); };
+    searchTargetInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.stopPropagation(); executePlaceSearch(); } });
+
+    document.getElementById("btnManualPickTip").onclick = () => {
+      searchTargetBox.style.display = "none"; isTargetMode = true; // target mode activated
+      alert(i18n.tapToPinTip);
+    };
+
+    if (map) {
+      map.on("click", (e) => {
+        if (!isTargetMode) return;
+      const name = prompt(i18n.targetPrompt, i18n.targetDefault); if (!name) return;
+      isTargetMode = false; // target mode deactivated
+      const newTarget = { name: name, lat: e.latlng.lat, lng: e.latlng.lng, by: myName };
+      renderTarget(newTarget); syncSquadLocation(newTarget);
+    });
+    }
+
+    document.getElementById("btnShareLine").onclick = () => {
+      const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${currentRoomId}`;
+      if (typeof liff !== "undefined" && liff.isApiAvailable && liff.isApiAvailable("shareTargetPicker")) {
+        liff.shareTargetPicker([{ type: "text", text: `📍 U-Nhai [${currentRoomId}]
+${shareUrl}` }]);
+      } else { navigator.clipboard.writeText(shareUrl); alert(i18n.copied + shareUrl); }
+    };
+
+    document.getElementById("btnClearGhosts").onclick = async () => {
+      if (confirm(i18n.clearGhostsConfirm.replace("[ROOM]", currentRoomId))) {
+        await fetch(BACKEND_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "clear", roomId: currentRoomId }) });
+        alert(i18n.clearGhostsDone);
+        location.reload();
+      }
+    };
+
+    const chatDrawer = document.getElementById("chatDrawer");
+    document.getElementById("btnToggleChat").onclick = () => {
+      isChatOpen = !isChatOpen; chatDrawer.classList.toggle("open", isChatOpen);
+      if (isChatOpen) { document.getElementById("chatBadge").style.display = "none"; document.getElementById("chatInput").focus(); }
+    };
+    document.getElementById("btnCloseChat").onclick = () => { isChatOpen = false; chatDrawer.classList.remove("open"); };
+
+    async function sendChatMessage() {
+      const input = document.getElementById("chatInput"); const msg = input.value.trim(); if (!msg) return;
+      input.value = ""; renderMyMarker(myLat, myLng, true, msg);
+      await syncSquadLocation(null, msg);
+    }
+    document.getElementById("btnSendMsg").onclick = sendChatMessage;
+    document.getElementById("chatInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendChatMessage(); });
+
+    var modalAcc = document.getElementById("modalAccount");
+    document.getElementById("btnProfileHeader").onclick = (e) => { updateUserUI(); modalAcc.style.display = "flex"; };
+    document.getElementById("btnAccCloseModal").onclick = () => { modalAcc.style.display = "none"; };
+    modalAcc.onclick = (e) => { if (e.target === modalAcc) modalAcc.style.display = "none"; };
+
+    document.getElementById("btnAccLoginLine").onclick = () => {
+      if (typeof liff !== "undefined") liff.login({ redirectUri: window.location.href });
+      else alert("LINE...");
+    };
+
+    document.getElementById("btnAccLoginGoogle").onclick = () => {
+      const gEmail = prompt(i18n.googlePrompt, "");
+      if (gEmail && gEmail.trim()) {
+        const cleanG = gEmail.trim();
+        myUserId = "G_" + btoa(unescape(encodeURIComponent(cleanG))).replace(/=/g, "").slice(0, 10);
+        myName = cleanG.split("@")[0];
+        myAvatar = "https://cdn-icons-png.flaticon.com/512/300/300221.png";
+        authProvider = "google"; isLoggedIn = true;
+        localStorage.setItem("SQUAD_UID", myUserId); localStorage.setItem("SQUAD_UNAME", myName);
+        localStorage.setItem("SQUAD_UAVATAR", myAvatar); localStorage.setItem("SQUAD_AUTH_PROVIDER", "google");
+        updateUserUI(); modalAcc.style.display = "none"; renderMyMarker(myLat, myLng, true); syncSquadLocation();
+        alert(`✅ ${i18n.loggedAs} [${myName}]`);
+      }
+    };
+
+    document.getElementById("btnAccLogout").onclick = async () => {
+      if (confirm(i18n.logoutConfirm)) {
+        try { await fetch(BACKEND_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "logout", roomId: currentRoomId, userId: myUserId }) }); } catch(e) {}
+        localStorage.removeItem("SQUAD_UID"); localStorage.removeItem("SQUAD_UNAME"); localStorage.removeItem("SQUAD_UAVATAR"); localStorage.removeItem("SQUAD_AUTH_PROVIDER");
+        if (typeof liff !== "undefined" && liff.isLoggedIn()) liff.logout();
+        alert(i18n.logoutDone);
+        location.reload();
+      }
+    };
+  
+    // ========================================================
+    // 🔄 ระบบพิกัดเบื้องหลัง (PWA + Background Audio Keep-Alive)
+    // ========================================================
+    let isBgTracking = true;
+    let bgAudio = null;
+    let wakeLock = null;
+
+    // ลงทะเบียน Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg fail:', err));
+    }
+
+    // เสียงเงียบ (Silent Audio Loop) ความยาวสั้นมาก เพื่อคงเธรด JavaScript ไม่ให้โดน OS สั่งหลับ
+    const SILENT_AUDIO_URI = "data:audio/wav;base64,UklGRmQfAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+
+    function initBackgroundKeepAlive() {
+      if (bgAudio) return;
+      try {
+        bgAudio = new Audio(SILENT_AUDIO_URI);
+        bgAudio.loop = true;
+        bgAudio.volume = 0.001; // เบาจนไม่มีเสียง เพื่อไม่กวนมีเดียอื่น
+        if (isBgTracking) {
+          bgAudio.play().catch(() => {});
+        }
+      } catch(e) {}
+      requestWakeLock();
+    }
+
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator && isBgTracking) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch(e) {}
+    }
+
+    // เมื่อพับหน้าจอหรือสลับแอป: ให้เสียงเงียบรันต่อเนื่องเพื่อคงการยิงพิกัด GPS
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (bgAudio && isBgTracking) {
+          bgAudio.play().catch(() => {});
+        }
+      } else {
+        requestWakeLock();
+      }
+    });
+
+    // เริ่มทำงานทันทีที่มีการแตะหน้าจอครั้งแรก (ตามนโยบาย Audio ของบราวเซอร์)
+    ['touchstart', 'click'].forEach(evt => {
+      document.addEventListener(evt, () => {
+        initBackgroundKeepAlive();
+      }, { once: true });
+    });
+
+    // ปุ่มสลับเปิด-ปิดโหมดทำงานเบื้องหลัง
+    const btnBgMode = document.getElementById("btnBgMode");
+    if (btnBgMode) {
+      btnBgMode.onclick = () => {
+        isBgTracking = !isBgTracking;
+        btnBgMode.classList.toggle("active", isBgTracking);
+        if (isBgTracking) {
+          initBackgroundKeepAlive();
+          if (bgAudio) bgAudio.play().catch(() => {});
+          alert(isThai ? "✅ เปิดโหมดเบื้องหลัง: พิกัดจะส่งสดตลอดเวลาแม้พับจอหรือสลับแอป" : "✅ Background GPS enabled: Locations will keep syncing when folded/locked.");
+        } else {
+          if (bgAudio) bgAudio.pause();
+          if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+          alert(isThai ? "⏸️ ปิดโหมดเบื้องหลัง: พิกัดจะหยุดส่งเมื่อพับจอเพื่อประหยัดแบต" : "⏸️ Background GPS disabled.");
+        }
+      };
+    }
+
+  </script>
+</body>
+</html>
