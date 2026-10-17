@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>U-Nhai - dashboard.html</title>
+  <title>U-Nhai - Dashboard</title>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -18,19 +18,27 @@
     .project-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
     .room-badge { background: #0f172a; border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
     .card-actions { display: flex; gap: 8px; margin-top: 4px; }
-    .btn-action { flex: 1; padding: 10px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: bold; border: none; cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .btn-action { flex: 1; padding: 10px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; border: none; cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
     .btn-enter { background: #06c755; color: #fff; }
+    .btn-settings { background: #1e293b; border: 1.2px solid #38bdf8; color: #38bdf8; }
+    .btn-settings:active { background: rgba(56,189,248,0.2); }
     .btn-share { background: #2563eb; color: #fff; }
-    .btn-del { background: #334155; color: #ef4444; flex: 0 0 40px; font-size: 1rem; }
+    .btn-del { background: #334155; color: #ef4444; flex: 0 0 38px; font-size: 1rem; }
     .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15,23,42,0.96); border-top: 1px solid #334155; padding: 14px 16px; z-index: 1000; }
     .btn-create-main { width: 100%; background: linear-gradient(135deg, #06c755, #059669); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    #modalCreate, #modalAccount { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    #modalCreate, #modalAccount, #modalRoomSettings { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-box { background: #1e293b; border: 1px solid #475569; border-radius: 16px; width: 100%; max-width: 360px; padding: 20px; text-align: center; }
     .modal-input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; color: #fff; outline: none; margin-bottom: 16px; font-size: 0.9rem; }
     .btn-modal { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
     .btn-acc { width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+    .switch-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch-toggle input { opacity: 0; width: 0; height: 0; }
+    .switch-slider { position: absolute; cursor: pointer; inset: 0; background-color: #334155; transition: .25s; border-radius: 24px; }
+    .switch-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .25s; border-radius: 50%; }
+    input:checked + .switch-slider { background-color: #06c755; }
+    input:checked + .switch-slider:before { transform: translateX(20px); }
+    input:disabled + .switch-slider { opacity: 0.45; cursor: not-allowed; }
   </style>
-  <!-- PWA & Mobile Web App Meta -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
   <meta name="mobile-web-app-capable" content="yes">
@@ -39,76 +47,159 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="logo.png">
 </head>
-<body style="background:#0b0f19; color:#fff; min-height:100vh; padding:16px 16px 95px 16px; margin:0;">
-  <div class="header-branding" style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:18px;">
-    <div class="brand-logo-badge" style="display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:10px; border:2px solid #06c755; background:#0f172a; flex-shrink:0;">
+<body>
+  <div class="header-branding">
+    <div class="brand-logo-badge">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#06c755" stroke="#ffffff" stroke-width="1.5"/><circle cx="12" cy="9" r="3" fill="#ffffff"/></svg>
     </div>
     <div style="font-size:1.3rem; font-weight:bold; color:#f8fafc;">📍 U-Nhai</div>
   </div>
 
-  <div class="profile-card" id="btnProfileCard" style="background:#1e293b; border:1px solid #334155; border-radius:16px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; cursor:pointer;">
+  <div class="profile-card" id="btnProfileCard">
     <div style="display:flex; align-items:center; gap:12px;">
-      <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" style="width:48px !important; height:48px !important; min-width:48px !important; max-width:48px !important; border-radius:50% !important; border:2.5px solid #06c755 !important; object-fit:cover !important; flex-shrink:0 !important; background:#0f172a;" class="avatar-lg">
+      <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="avatar-lg">
       <div>
         <div id="userName" style="font-size:1rem; font-weight:bold; color:#f8fafc;">Loading...</div>
-        <div id="userSub" style="font-size:0.75rem; color:#94a3b8;">Squad Live GPS Command Hub</div>
+        <div id="userSub" style="font-size:0.75rem; color:#94a3b8;">ศูนย์บัญชาการแผนที่แก๊งสด</div>
       </div>
     </div>
-    <div id="btnProfileManageText" style="background:#0f172a; border:1px solid #38bdf8; color:#38bdf8; font-size:0.72rem; padding:4px 10px; border-radius:10px; font-weight:bold;">Account ⚙️</div>
+    <div id="btnProfileManageText" style="background:#0f172a; border:1px solid #38bdf8; color:#38bdf8; font-size:0.72rem; padding:4px 10px; border-radius:10px; font-weight:bold;">บัญชี ⚙️</div>
   </div>
 
-  <div class="section-title" style="font-size:1.05rem; font-weight:bold; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; color:#cbd5e1;">
-    <span id="sectionTitleText">🗺️ My Squad Maps</span>
-    <span id="projectCount" class="room-badge" style="background:#0f172a; border:1px solid #38bdf8; color:#38bdf8; font-size:0.68rem; padding:2px 8px; border-radius:10px; font-weight:bold;">0</span>
+  <div class="section-title">
+    <span id="sectionTitleText">🗺️ รายการแผนที่ของฉัน</span>
+    <span id="projectCount" class="room-badge">0</span>
   </div>
 
-  <div class="project-grid" id="projectList" style="display:flex; flex-direction:column; gap:12px;">
-    <div id="emptyTip" style="text-align:center; color:#64748b; padding:40px 0;">No squad maps yet</div>
+  <div class="project-grid" id="projectList">
+    <div id="emptyTip" style="text-align:center; color:#64748b; padding:40px 0;">ยังไม่มีแผนที่กลุ่ม<br>กดปุ่มสีเขียวด้านล่างเพื่อสร้างห้องใหม่!</div>
   </div>
 
-  <div class="bottom-bar" style="position:fixed; bottom:0; left:0; right:0; background:rgba(15,23,42,0.96); border-top:1px solid #334155; padding:14px 16px; z-index:1000;">
-    <button class="btn-create-main" id="btnOpenCreate" style="width:100%; background:linear-gradient(135deg, #06c755, #059669); color:#fff; border:none; border-radius:12px; padding:14px; font-size:1rem; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-      <span>➕</span> <span id="btnCreateText">Create New Squad Map</span>
+  <div class="bottom-bar">
+    <button class="btn-create-main" id="btnOpenCreate">
+      <span>➕</span> <span id="btnCreateText">สร้างแผนที่กลุ่มใหม่</span>
     </button>
   </div>
 
-  <div id="modalCreate" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; padding:20px;">
-    <div class="modal-box" style="background:#1e293b; border:1px solid #475569; border-radius:16px; width:100%; max-width:360px; padding:20px; text-align:center;">
-      <div id="modalCreateTitle" style="font-size:1.15rem; font-weight:bold; margin-bottom:12px; color:#fff;">🚩 Create New Squad Map</div>
-      <input type="text" class="modal-input" id="roomNameInput" placeholder="e.g. Roadtrip 2026, Delivery Squad" maxlength="30" style="width:100%; background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px; color:#fff; outline:none; margin-bottom:16px;">
+  <!-- Modal สร้างห้องใหม่ -->
+  <div id="modalCreate">
+    <div class="modal-box">
+      <div id="modalCreateTitle" style="font-size:1.15rem; font-weight:bold; margin-bottom:12px; color:#fff;">🚩 สร้างแผนที่กลุ่มใหม่</div>
+      <input type="text" class="modal-input" id="roomNameInput" placeholder="เช่น ทริปเขาใหญ่ 2026, ทีมไรเดอร์" maxlength="30">
       <div style="display:flex; gap:10px;">
-        <button class="btn-modal" id="btnCancelModal" style="flex:1; padding:10px; border-radius:8px; font-weight:bold; background:#334155; color:#cbd5e1;">Cancel</button>
-        <button class="btn-modal" id="btnConfirmCreate" style="flex:1; padding:10px; border-radius:8px; font-weight:bold; background:#06c755; color:#fff;">Create Now</button>
+        <button class="btn-modal" id="btnCancelModal" style="background:#334155; color:#cbd5e1;">ยกเลิก</button>
+        <button class="btn-modal" id="btnConfirmCreate" style="background:#06c755; color:#fff;">สร้างห้องทันที</button>
       </div>
     </div>
   </div>
 
-  <div id="modalAccount" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; padding:20px;">
+  <!-- Modal จัดการบัญชี -->
+  <div id="modalAccount">
     <div style="background:#1e293b; border:1px solid #475569; border-radius:20px; width:100%; max-width:340px; padding:24px; text-align:center;">
       <img id="accModalAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" style="width:72px; height:72px; border-radius:50%; border:3px solid #06c755; margin:0 auto 12px; object-fit:cover; background:#0f172a;">
-      <div id="accModalName" style="font-size:1.15rem; font-weight:bold; color:#fff; margin-bottom:4px;">Guest</div>
-      <div id="accModalId" style="font-size:0.75rem; color:#94a3b8; margin-bottom:20px;">Status: Temporary</div>
+      <div id="accModalName" style="font-size:1.15rem; font-weight:bold; color:#fff; margin-bottom:4px;">สหาย</div>
+      <div id="accModalId" style="font-size:0.75rem; color:#94a3b8; margin-bottom:20px;">สถานะ: บัญชีชั่วคราว</div>
       <div id="accLoginActions">
-        <button class="btn-acc" id="btnAccLoginLine" style="background:#06c755; color:#fff;"><span>💬</span> <span id="dashLoginLineText">Log in with LINE</span></button>
-        <button class="btn-acc" id="btnAccLoginGoogle" style="background:#fff; color:#1f2937;"><span>🌐</span> <span id="dashLoginGoogleText">Log in with Google</span></button>
+        <button class="btn-acc" id="btnAccLoginLine" style="background:#06c755; color:#fff;"><span>💬</span> <span id="dashLoginLineText">เข้าสู่ระบบด้วย LINE</span></button>
+        <button class="btn-acc" id="btnAccLoginGoogle" style="background:#fff; color:#1f2937;"><span>🌐</span> <span id="dashLoginGoogleText">เข้าสู่ระบบด้วย Google</span></button>
       </div>
-      <button class="btn-acc" id="btnAccLogout" style="background:#ef4444; color:#fff; margin-top:8px;">🚪 Log out</button>
-      <button class="btn-acc" id="btnAccCloseModal" style="background:#334155; color:#cbd5e1;">Close</button>
+      <button class="btn-acc" id="btnAccLogout" style="background:#ef4444; color:#fff; margin-top:8px;">🚪 ออกจากระบบ (Log out)</button>
+      <button class="btn-acc" id="btnAccCloseModal" style="background:#334155; color:#cbd5e1;">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+
+  <!-- Modal การตั้งค่าห้อง (Room Settings on Dashboard) -->
+  <div id="modalRoomSettings">
+    <div style="background:#1e293b; border:1.5px solid #334155; border-radius:20px; width:100%; max-width:390px; max-height:88vh; overflow-y:auto; padding:22px; box-shadow:0 15px 40px rgba(0,0,0,0.85); display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.3rem;">⚙️</span>
+          <span style="font-weight:700; font-size:1.05rem; color:#f8fafc;">การตั้งค่าห้อง (Room Settings)</span>
+        </div>
+        <button type="button" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer; padding:4px;" id="btnCloseSettings">✕</button>
+      </div>
+
+      <!-- แถบสถานะห้องและสิทธิ์ผู้ใช้ -->
+      <div style="background:#0f172a; border:1px solid #334155; border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:0.68rem; color:#94a3b8;">รหัสห้อง:</div>
+          <div style="font-family:'Courier New', monospace; font-size:0.9rem; font-weight:800; color:#38bdf8;" id="settingsRoomCode">ROOM-XXXX</div>
+        </div>
+        <div id="settingsRoleBadge" style="display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; background:rgba(6,199,85,0.18); border:1.2px solid #06c755; color:#06c755;">
+          👑 เจ้าของห้อง (Host)
+        </div>
+      </div>
+
+      <!-- กฎความปลอดภัยพื้นฐาน -->
+      <div style="background:rgba(245, 158, 11, 0.1); border:1px dashed #f59e0b; border-radius:10px; padding:10px 12px; font-size:0.72rem; color:#fbbf24; line-height:1.45;">
+        <b>🛡️ สิทธิ์การจัดการห้อง:</b><br>
+        เฉพาะเจ้าของห้อง (Host/Admin) เท่านั้นที่สามารถกำหนดสิทธิ์ปักหมุดจุดนัดพบ หรือยุบห้องได้ สมาชิกทั่วไปสามารถเข้าดูการตั้งค่าได้
+      </div>
+
+      <!-- สวิตช์/ตัวเลือก 1: สิทธิ์การปักหมุดบอกพิกัดจุดนัดพบ -->
+      <div style="background:#0f172a; border:1px solid #334155; border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:0.85rem; font-weight:700; color:#f8fafc;">📍 สิทธิ์การปักหมุดจุดนัดพบ</div>
+          <span id="pinPermBadge" style="font-size:0.68rem; color:#06c755; font-weight:bold; background:rgba(6,199,85,0.15); padding:2px 6px; border-radius:6px;">แอดมินเท่านั้น</span>
+        </div>
+        <div style="font-size:0.7rem; color:#94a3b8; line-height:1.35;">
+          กำหนดว่าใครสามารถปักหมุดบอกพิกัดจุดนัดพบในแผนที่ได้ (หมุดที่ปักแล้วทุกคนจะเห็นตรงกันหมด):
+        </div>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <button type="button" class="btn-perm-opt" id="btnPermHostOnly" style="flex:1; padding:8px 6px; border-radius:8px; font-size:0.75rem; font-weight:bold; border:1.5px solid #06c755; background:rgba(6,199,85,0.18); color:#06c755; cursor:pointer;">👑 แอดมินเท่านั้น</button>
+          <button type="button" class="btn-perm-opt" id="btnPermEveryone" style="flex:1; padding:8px 6px; border-radius:8px; font-size:0.75rem; font-weight:bold; border:1px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer;">👥 สมาชิกทุกคน</button>
+        </div>
+      </div>
+
+      <!-- สวิตช์ 2: การแชร์ลิงก์ห้อง -->
+      <div style="background:#0f172a; border:1px solid #334155; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:0;">
+          <div style="font-size:0.82rem; font-weight:700; color:#f8fafc;">ทุกคนสามารถแชร์ลิงก์ห้องได้</div>
+          <div style="font-size:0.68rem; color:#94a3b8; line-height:1.35;" id="descAllowShare">เปิด: ทุกคนกดแชร์/คัดลอกลิงก์ได้<br>ปิด: มีเพียงเจ้าของห้องเท่านั้นที่แชร์ได้</div>
+        </div>
+        <label class="switch-toggle">
+          <input type="checkbox" id="toggleAllowAllShare" checked>
+          <span class="switch-slider"></span>
+        </label>
+      </div>
+
+      <!-- สวิตช์ 3: การอนุมัติก่อนเข้าร่วม -->
+      <div style="background:#0f172a; border:1px solid #334155; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:0;">
+          <div style="font-size:0.82rem; font-weight:700; color:#f8fafc;">ต้องได้รับอนุมัติก่อนเข้าร่วม</div>
+          <div style="font-size:0.68rem; color:#94a3b8; line-height:1.35;" id="descRequireApproval">เปิด: สมาชิกใหม่ต้องได้รับการอนุญาตจากเจ้าของห้องก่อนเข้าแผนที่</div>
+        </div>
+        <label class="switch-toggle">
+          <input type="checkbox" id="toggleRequireApproval">
+          <span class="switch-slider"></span>
+        </label>
+      </div>
+
+      <!-- ปุ่มยุบห้อง (แสดงเฉพาะเจ้าของห้อง) -->
+      <div id="boxDestroyRoom" style="display:none; margin-top:4px;">
+        <button type="button" id="btnDestroyRoom" style="width:100%; background:rgba(239, 68, 68, 0.15); border:1.5px solid #ef4444; color:#ef4444; border-radius:10px; padding:10px; font-size:0.8rem; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <span>💥</span> <span>ยุบห้องและล้างข้อมูลถาวร (Close Room)</span>
+        </button>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <button type="button" id="btnSaveCloseSettings" style="flex:1; background:#06c755; color:#fff; border:none; border-radius:10px; padding:11px; font-size:0.85rem; font-weight:bold; cursor:pointer;">💾 บันทึกการตั้งค่า</button>
+        <button type="button" id="btnCancelSettings" style="flex:1; background:#334155; color:#cbd5e1; border:none; border-radius:10px; padding:11px; font-size:0.85rem; font-weight:bold; cursor:pointer;">ปิด</button>
+      </div>
     </div>
   </div>
 
   <script>
     const MY_LIFF_ID = "2012010620-7LrsLOGx";
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKW0ynRLsyYCGvNs5i87kwRNJBSj79idNalA_r8Nbx8btdi8i_AliZdaAESM1tLS3W/exec";
     const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
-    // ตรวจจับภาษาเริ่มต้นของเครื่อง (Device Default Language)
     const rawLang = (navigator.languages && navigator.languages.length ? navigator.languages[0] : (navigator.language || navigator.userLanguage || "th")).toLowerCase();
     const isThai = rawLang.startsWith("th");
 
     const dict = {
       th: {
-        title: "U-Nhai",
+        title: "U-Nhai - Dashboard",
         userSub: "ศูนย์บัญชาการแผนที่แก๊งสด",
         accountBtn: "บัญชี ⚙️",
         sectionTitle: "🗺️ รายการแผนที่ของฉัน",
@@ -119,6 +210,7 @@
         cancel: "ยกเลิก",
         createNow: "สร้างห้องทันที",
         enterMap: "🗺️ เข้าแผนที่",
+        settingsBtn: "⚙️ ตั้งค่า",
         shareLine: "📤 แชร์เข้า LINE",
         deleteConfirm: "ต้องการลบห้องนี้ใช่หรือไม่?",
         createdOn: "สร้างเมื่อ:",
@@ -137,7 +229,7 @@
         createSuccess: "✅ สร้างแผนที่สำเร็จ!"
       },
       en: {
-        title: "U-Nhai",
+        title: "U-Nhai - Dashboard",
         userSub: "Squad Live GPS Command Hub",
         accountBtn: "Account ⚙️",
         sectionTitle: "🗺️ My Squad Maps",
@@ -148,6 +240,7 @@
         cancel: "Cancel",
         createNow: "Create Now",
         enterMap: "🗺️ Open Map",
+        settingsBtn: "⚙️ Settings",
         shareLine: "📤 Share to LINE",
         deleteConfirm: "Do you want to delete this room?",
         createdOn: "Created:",
@@ -193,141 +286,4 @@
       avatar: localStorage.getItem("SQUAD_UAVATAR") || DEFAULT_AVATAR,
       provider: localStorage.getItem("SQUAD_AUTH_PROVIDER") || ""
     };
-    localStorage.setItem("SQUAD_UID", myProfile.userId);
-
-    function updateDashboardUI() {
-      document.getElementById("userName").textContent = myProfile.name;
-      document.getElementById("userAvatar").src = myProfile.avatar;
-      document.getElementById("accModalAvatar").src = myProfile.avatar;
-      document.getElementById("accModalName").textContent = myProfile.name;
-
-      const accIdEl = document.getElementById("accModalId");
-      const loginActions = document.getElementById("accLoginActions");
-      const btnLogout = document.getElementById("btnAccLogout");
-
-      if (myProfile.provider) {
-        accIdEl.innerHTML = `<span style="color:#06c755; font-weight:bold;">${i18n.accLogged} ${myProfile.provider === "line" ? "LINE" : "Google"} (${myProfile.userId.slice(-6)})</span>`;
-        loginActions.style.display = "none";
-        btnLogout.style.display = "block";
-      } else {
-        accIdEl.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">${i18n.accTemp}</span>`;
-        loginActions.style.display = "block";
-        btnLogout.style.display = "none";
-      }
-    }
-    updateDashboardUI();
-
-    async function initDashboardLiff() {
-      try {
-        if (typeof liff === "undefined") { renderProjects(); return; }
-        await liff.init({ liffId: MY_LIFF_ID });
-        if (liff.isLoggedIn()) {
-          try {
-            const p = await liff.getProfile();
-            myProfile.userId = p.userId;
-            myProfile.name = p.displayName || myProfile.name;
-            myProfile.avatar = p.pictureUrl || myProfile.avatar;
-            myProfile.provider = "line";
-          } catch(e) {}
-          localStorage.setItem("SQUAD_UID", myProfile.userId);
-          localStorage.setItem("SQUAD_UNAME", myProfile.name);
-          localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar);
-          localStorage.setItem("SQUAD_AUTH_PROVIDER", "line");
-        } else {
-          if (liff.isInClient()) { liff.login(); return; }
-        }
-      } catch(e) {}
-      updateDashboardUI();
-      renderProjects();
-    }
-    initDashboardLiff();
-
-    function getStoredProjects() { return JSON.parse(localStorage.getItem("SQUAD_PROJECTS") || "[]"); }
-    function saveProjects(list) { localStorage.setItem("SQUAD_PROJECTS", JSON.stringify(list)); renderProjects(); }
-
-    function renderProjects() {
-      const list = getStoredProjects();
-      const container = document.getElementById("projectList");
-      document.getElementById("projectCount").textContent = `${list.length} ${i18n.unitRoom}`;
-      if (!list.length) {
-        container.innerHTML = `<div style="text-align:center; color:#64748b; padding:40px 0;">${i18n.emptyTip}</div>`;
-        return;
-      }
-      container.innerHTML = "";
-      list.forEach((p, idx) => {
-        const enterLink = `LiffMap.html?room=${encodeURIComponent(p.roomId)}`;
-        const card = document.createElement("div");
-        card.className = "project-card";
-        card.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;"><div style="font-size:1rem; font-weight:bold; color:#f8fafc;">${p.name}</div><div class="room-badge">${p.roomId}</div></div><div style="font-size:0.75rem; color:#94a3b8;">📅 ${i18n.createdOn} ${p.createdAt} (${i18n.by} ${p.creator})</div><div class="card-actions"><a href="${enterLink}" class="btn-action btn-enter">${i18n.enterMap}</a><button class="btn-action btn-share" onclick="shareProject('${p.name}', '${p.roomId}')">${i18n.shareLine}</button><button class="btn-action btn-del" onclick="deleteProject(${idx})">🗑️</button></div>`;
-        container.appendChild(card);
-      });
-    }
-
-    const modal = document.getElementById("modalCreate");
-    const nameInput = document.getElementById("roomNameInput");
-    document.getElementById("btnOpenCreate").onclick = () => { modal.style.display = "flex"; nameInput.value = ""; nameInput.focus(); };
-    document.getElementById("btnCancelModal").onclick = () => { modal.style.display = "none"; };
-
-    document.getElementById("btnConfirmCreate").onclick = () => {
-      const name = nameInput.value.trim(); if (!name) { alert(i18n.enterNamePrompt); return; }
-      const roomId = "ROOM-" + Math.floor(1000 + Math.random() * 9000);
-      const nowStr = new Date().toLocaleDateString(isThai ? "th-TH" : "en-US", { day: "numeric", month: "short", year: "2-digit" });
-      const currentList = getStoredProjects();
-      currentList.unshift({ roomId: roomId, name: name, creator: myProfile.name, createdAt: nowStr });
-      saveProjects(currentList);
-      modal.style.display = "none";
-      alert(`${i18n.createSuccess} [${name}]
-${roomId}`);
-    };
-
-    window.shareProject = (name, roomId) => {
-      const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${roomId}`;
-      navigator.clipboard.writeText(shareUrl);
-      alert(i18n.copied + shareUrl);
-    };
-
-    window.deleteProject = (index) => {
-      if (confirm(i18n.deleteConfirm)) {
-        const list = getStoredProjects(); list.splice(index, 1); saveProjects(list);
-      }
-    };
-
-    const modalAcc = document.getElementById("modalAccount");
-    document.getElementById("btnProfileCard").onclick = () => { updateDashboardUI(); modalAcc.style.display = "flex"; };
-    document.getElementById("btnAccCloseModal").onclick = () => { modalAcc.style.display = "none"; };
-    modalAcc.onclick = (e) => { if (e.target === modalAcc) modalAcc.style.display = "none"; };
-
-    document.getElementById("btnAccLoginLine").onclick = () => {
-      if (typeof liff !== "undefined") liff.login({ redirectUri: window.location.href });
-      else alert("LINE...");
-    };
-
-    document.getElementById("btnAccLoginGoogle").onclick = () => {
-      const gEmail = prompt(i18n.promptGoogle, "");
-      if (gEmail && gEmail.trim()) {
-        const cleanG = gEmail.trim();
-        myProfile.userId = "G_" + btoa(unescape(encodeURIComponent(cleanG))).replace(/=/g, "").slice(0, 10);
-        myProfile.name = cleanG.split("@")[0];
-        myAvatar = "https://cdn-icons-png.flaticon.com/512/300/300221.png";
-        authProvider = "google";
-        localStorage.setItem("SQUAD_UID", myProfile.userId); localStorage.setItem("SQUAD_UNAME", myProfile.name);
-        localStorage.setItem("SQUAD_UAVATAR", myAvatar); localStorage.setItem("SQUAD_AUTH_PROVIDER", "google");
-        updateDashboardUI(); modalAcc.style.display = "none";
-      }
-    };
-
-    document.getElementById("btnAccLogout").onclick = () => {
-      if (confirm(i18n.logoutConfirm)) {
-        localStorage.removeItem("SQUAD_UID"); localStorage.removeItem("SQUAD_UNAME"); localStorage.removeItem("SQUAD_UAVATAR"); localStorage.removeItem("SQUAD_AUTH_PROVIDER");
-        if (typeof liff !== "undefined" && liff.isLoggedIn()) liff.logout();
-        location.reload();
-      }
-    };
-  
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg fail:', err));
-    }
-
-  </script>
-</body>
-</html>
+    localStor
