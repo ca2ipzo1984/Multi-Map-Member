@@ -286,4 +286,357 @@
       avatar: localStorage.getItem("SQUAD_UAVATAR") || DEFAULT_AVATAR,
       provider: localStorage.getItem("SQUAD_AUTH_PROVIDER") || ""
     };
-    localStor
+    localStorage.setItem("SQUAD_UID", myProfile.userId);
+
+    function updateDashboardUI() {
+      document.getElementById("userName").textContent = myProfile.name;
+      document.getElementById("userAvatar").src = myProfile.avatar;
+      document.getElementById("accModalAvatar").src = myProfile.avatar;
+      document.getElementById("accModalName").textContent = myProfile.name;
+
+      const accIdEl = document.getElementById("accModalId");
+      const loginActions = document.getElementById("accLoginActions");
+      const btnLogout = document.getElementById("btnAccLogout");
+
+      if (myProfile.provider) {
+        accIdEl.innerHTML = `<span style="color:#06c755; font-weight:bold;">${i18n.accLogged} ${myProfile.provider === "line" ? "LINE" : "Google"} (${myProfile.userId.slice(-6)})</span>`;
+        loginActions.style.display = "none";
+        btnLogout.style.display = "block";
+      } else {
+        accIdEl.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">${i18n.accTemp}</span>`;
+        loginActions.style.display = "block";
+        btnLogout.style.display = "none";
+      }
+    }
+    updateDashboardUI();
+
+    async function initDashboardLiff() {
+      try {
+        if (typeof liff === "undefined") { renderProjects(); return; }
+        await liff.init({ liffId: MY_LIFF_ID });
+        if (liff.isLoggedIn()) {
+          try {
+            const p = await liff.getProfile();
+            myProfile.userId = p.userId;
+            myProfile.name = p.displayName || myProfile.name;
+            myProfile.avatar = p.pictureUrl || myProfile.avatar;
+            myProfile.provider = "line";
+          } catch(e) {}
+          localStorage.setItem("SQUAD_UID", myProfile.userId);
+          localStorage.setItem("SQUAD_UNAME", myProfile.name);
+          localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar);
+          localStorage.setItem("SQUAD_AUTH_PROVIDER", "line");
+        } else {
+          if (liff.isInClient()) { liff.login(); return; }
+        }
+      } catch(e) {}
+      updateDashboardUI();
+      renderProjects();
+    }
+    initDashboardLiff();
+
+    function getStoredProjects() { return JSON.parse(localStorage.getItem("SQUAD_PROJECTS") || "[]"); }
+    function saveProjects(list) { localStorage.setItem("SQUAD_PROJECTS", JSON.stringify(list)); renderProjects(); }
+
+    function renderProjects() {
+      const list = getStoredProjects();
+      const container = document.getElementById("projectList");
+      document.getElementById("projectCount").textContent = `${list.length} ${i18n.unitRoom}`;
+      if (!list.length) {
+        container.innerHTML = `<div style="text-align:center; color:#64748b; padding:40px 0;">${i18n.emptyTip}</div>`;
+        return;
+      }
+      container.innerHTML = "";
+      list.forEach((p, idx) => {
+        const enterLink = `LiffMap.html?room=${encodeURIComponent(p.roomId)}`;
+        const card = document.createElement("div");
+        card.className = "project-card";
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="font-size:1rem; font-weight:bold; color:#f8fafc;">${p.name}</div>
+            <div class="room-badge">${p.roomId}</div>
+          </div>
+          <div style="font-size:0.75rem; color:#94a3b8;">📅 ${i18n.createdOn} ${p.createdAt} (${i18n.by} ${p.creator})</div>
+          <div class="card-actions">
+            <a href="${enterLink}" class="btn-action btn-enter">${i18n.enterMap}</a>
+            <button type="button" class="btn-action btn-settings" onclick="openRoomSettings('${p.roomId}')">${i18n.settingsBtn || "⚙️ ตั้งค่า"}</button>
+            <button type="button" class="btn-action btn-share" onclick="shareProject('${p.name}', '${p.roomId}')">${i18n.shareLine}</button>
+            <button type="button" class="btn-action btn-del" onclick="deleteProject(${idx})">🗑️</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    const modal = document.getElementById("modalCreate");
+    const nameInput = document.getElementById("roomNameInput");
+    document.getElementById("btnOpenCreate").onclick = () => { modal.style.display = "flex"; nameInput.value = ""; nameInput.focus(); };
+    document.getElementById("btnCancelModal").onclick = () => { modal.style.display = "none"; };
+
+    document.getElementById("btnConfirmCreate").onclick = () => {
+      const name = nameInput.value.trim(); if (!name) { alert(i18n.enterNamePrompt); return; }
+      const roomId = "ROOM-" + Math.floor(1000 + Math.random() * 9000);
+      const nowStr = new Date().toLocaleDateString(isThai ? "th-TH" : "en-US", { day: "numeric", month: "short", year: "2-digit" });
+      const currentList = getStoredProjects();
+      currentList.unshift({ roomId: roomId, name: name, creator: myProfile.name, creatorId: myProfile.userId, createdAt: nowStr });
+      saveProjects(currentList);
+
+      localStorage.setItem("SQUAD_HOST_" + roomId, myProfile.userId);
+      const defaultSettings = {
+        allowAllShare: true,
+        requireApproval: false,
+        pinPermission: "host_only",
+        ownerId: myProfile.userId,
+        ownerName: myProfile.name
+      };
+      localStorage.setItem("SQUAD_SETTINGS_" + roomId, JSON.stringify(defaultSettings));
+
+      modal.style.display = "none";
+      alert(`${i18n.createSuccess} [${name}]\n${roomId}`);
+    };
+
+    window.shareProject = (name, roomId) => {
+      const settings = JSON.parse(localStorage.getItem("SQUAD_SETTINGS_" + roomId) || "{}");
+      const hostId = localStorage.getItem("SQUAD_HOST_" + roomId);
+      const isHost = (hostId === myProfile.userId);
+
+      if (!isHost && settings.allowAllShare === false) {
+        alert(isThai ? "🔒 ห้องนี้ถูกตั้งค่าให้เฉพาะเจ้าของห้องเท่านั้นที่สามารถแชร์ลิงก์ได้" : "🔒 Only room host can share this room link.");
+        return;
+      }
+      const shareUrl = `https://liff.line.me/${MY_LIFF_ID}?room=${roomId}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert(i18n.copied + shareUrl);
+      }).catch(() => {
+        alert(i18n.copied + shareUrl);
+      });
+    };
+
+    window.deleteProject = (index) => {
+      if (confirm(i18n.deleteConfirm)) {
+        const list = getStoredProjects(); list.splice(index, 1); saveProjects(list);
+      }
+    };
+
+    const modalAcc = document.getElementById("modalAccount");
+    document.getElementById("btnProfileCard").onclick = () => { updateDashboardUI(); modalAcc.style.display = "flex"; };
+    document.getElementById("btnAccCloseModal").onclick = () => { modalAcc.style.display = "none"; };
+    modalAcc.onclick = (e) => { if (e.target === modalAcc) modalAcc.style.display = "none"; };
+
+    document.getElementById("btnAccLoginLine").onclick = () => {
+      if (typeof liff !== "undefined") liff.login({ redirectUri: window.location.href });
+      else alert("LINE...");
+    };
+
+    document.getElementById("btnAccLoginGoogle").onclick = () => {
+      const gEmail = prompt(i18n.promptGoogle, "");
+      if (gEmail && gEmail.trim()) {
+        const cleanG = gEmail.trim();
+        myProfile.userId = "G_" + btoa(unescape(encodeURIComponent(cleanG))).replace(/=/g, "").slice(0, 10);
+        myProfile.name = cleanG.split("@")[0];
+        myProfile.avatar = "https://cdn-icons-png.flaticon.com/512/300/300221.png";
+        myProfile.provider = "google";
+        localStorage.setItem("SQUAD_UID", myProfile.userId);
+        localStorage.setItem("SQUAD_UNAME", myProfile.name);
+        localStorage.setItem("SQUAD_UAVATAR", myProfile.avatar);
+        localStorage.setItem("SQUAD_AUTH_PROVIDER", "google");
+        updateDashboardUI();
+        modalAcc.style.display = "none";
+      }
+    };
+
+    document.getElementById("btnAccLogout").onclick = () => {
+      if (confirm(i18n.logoutConfirm)) {
+        localStorage.removeItem("SQUAD_UID");
+        localStorage.removeItem("SQUAD_UNAME");
+        localStorage.removeItem("SQUAD_UAVATAR");
+        localStorage.removeItem("SQUAD_AUTH_PROVIDER");
+        if (typeof liff !== "undefined" && liff.isLoggedIn()) liff.logout();
+        location.reload();
+      }
+    };
+
+    // ========================================================
+    // ⚙️ ระบบตั้งค่าห้อง (Room Settings Modal)
+    // ========================================================
+    const modalSettings = document.getElementById("modalRoomSettings");
+    let activeSettingsRoomId = "";
+    let activeRoomSettings = {
+      allowAllShare: true,
+      requireApproval: false,
+      pinPermission: "host_only",
+      ownerId: "",
+      ownerName: ""
+    };
+    let activeIsHost = false;
+
+    window.openRoomSettings = function(roomId) {
+      activeSettingsRoomId = roomId;
+      const projects = getStoredProjects();
+      const proj = projects.find(p => p.roomId === roomId);
+      const hostId = localStorage.getItem("SQUAD_HOST_" + roomId) || (proj ? proj.creatorId : "");
+
+      activeIsHost = (hostId === myProfile.userId) || (proj && proj.creator === myProfile.name);
+
+      try {
+        const saved = JSON.parse(localStorage.getItem("SQUAD_SETTINGS_" + roomId) || "null");
+        if (saved) {
+          activeRoomSettings = Object.assign({
+            allowAllShare: true,
+            requireApproval: false,
+            pinPermission: "host_only",
+            ownerId: hostId,
+            ownerName: proj ? proj.creator : ""
+          }, saved);
+        } else {
+          activeRoomSettings = {
+            allowAllShare: true,
+            requireApproval: false,
+            pinPermission: "host_only",
+            ownerId: hostId,
+            ownerName: proj ? proj.creator : ""
+          };
+        }
+      } catch(e) {}
+
+      document.getElementById("settingsRoomCode").textContent = roomId;
+      const badgeEl = document.getElementById("settingsRoleBadge");
+      const boxDestroy = document.getElementById("boxDestroyRoom");
+      const btnSave = document.getElementById("btnSaveCloseSettings");
+
+      if (activeIsHost) {
+        badgeEl.style.background = "rgba(6,199,85,0.18)";
+        badgeEl.style.borderColor = "#06c755";
+        badgeEl.style.color = "#06c755";
+        badgeEl.innerHTML = isThai ? "👑 เจ้าของห้อง (Host)" : "👑 Room Host";
+        boxDestroy.style.display = "block";
+        btnSave.style.display = "block";
+      } else {
+        badgeEl.style.background = "rgba(56,189,248,0.18)";
+        badgeEl.style.borderColor = "#38bdf8";
+        badgeEl.style.color = "#38bdf8";
+        badgeEl.innerHTML = isThai ? "👤 สมาชิก (Member)" : "👤 Member";
+        boxDestroy.style.display = "none";
+        btnSave.style.display = "none";
+      }
+
+      updatePinPermUI();
+      document.getElementById("toggleAllowAllShare").checked = !!activeRoomSettings.allowAllShare;
+      document.getElementById("toggleAllowAllShare").disabled = !activeIsHost;
+      document.getElementById("toggleRequireApproval").checked = !!activeRoomSettings.requireApproval;
+      document.getElementById("toggleRequireApproval").disabled = !activeIsHost;
+
+      modalSettings.style.display = "flex";
+    };
+
+    function updatePinPermUI() {
+      const isHostOnly = (activeRoomSettings.pinPermission !== "everyone");
+      const btnHost = document.getElementById("btnPermHostOnly");
+      const btnAll = document.getElementById("btnPermEveryone");
+      const badge = document.getElementById("pinPermBadge");
+
+      if (isHostOnly) {
+        btnHost.style.borderColor = "#06c755";
+        btnHost.style.background = "rgba(6,199,85,0.18)";
+        btnHost.style.color = "#06c755";
+
+        btnAll.style.borderColor = "#334155";
+        btnAll.style.background = "#1e293b";
+        btnAll.style.color = "#94a3b8";
+
+        badge.textContent = isThai ? "แอดมินเท่านั้น" : "Host Only";
+        badge.style.color = "#06c755";
+        badge.style.background = "rgba(6,199,85,0.15)";
+      } else {
+        btnAll.style.borderColor = "#38bdf8";
+        btnAll.style.background = "rgba(56,189,248,0.18)";
+        btnAll.style.color = "#38bdf8";
+
+        btnHost.style.borderColor = "#334155";
+        btnHost.style.background = "#1e293b";
+        btnHost.style.color = "#94a3b8";
+
+        badge.textContent = isThai ? "ทุกคนปักได้" : "Everyone";
+        badge.style.color = "#38bdf8";
+        badge.style.background = "rgba(56,189,248,0.15)";
+      }
+    }
+
+    document.getElementById("btnPermHostOnly").onclick = () => {
+      if (!activeIsHost) return;
+      activeRoomSettings.pinPermission = "host_only";
+      updatePinPermUI();
+    };
+
+    document.getElementById("btnPermEveryone").onclick = () => {
+      if (!activeIsHost) return;
+      activeRoomSettings.pinPermission = "everyone";
+      updatePinPermUI();
+    };
+
+    document.getElementById("toggleAllowAllShare").onchange = (e) => {
+      if (!activeIsHost) return;
+      activeRoomSettings.allowAllShare = e.target.checked;
+    };
+
+    document.getElementById("toggleRequireApproval").onchange = (e) => {
+      if (!activeIsHost) return;
+      activeRoomSettings.requireApproval = e.target.checked;
+    };
+
+    document.getElementById("btnCloseSettings").onclick = () => { modalSettings.style.display = "none"; };
+    document.getElementById("btnCancelSettings").onclick = () => { modalSettings.style.display = "none"; };
+    modalSettings.onclick = (e) => { if (e.target === modalSettings) modalSettings.style.display = "none"; };
+
+    document.getElementById("btnSaveCloseSettings").onclick = async () => {
+      if (!activeIsHost) {
+        modalSettings.style.display = "none";
+        return;
+      }
+      try {
+        localStorage.setItem("SQUAD_SETTINGS_" + activeSettingsRoomId, JSON.stringify(activeRoomSettings));
+        if (BACKEND_URL) {
+          fetch(BACKEND_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "update_settings",
+              roomId: activeSettingsRoomId,
+              settings: activeRoomSettings
+            })
+          }).catch(() => {});
+        }
+      } catch(e) {}
+      alert(isThai ? "✅ บันทึกการตั้งค่าห้องเรียบร้อยแล้ว!" : "✅ Room settings saved!");
+      modalSettings.style.display = "none";
+    };
+
+    document.getElementById("btnDestroyRoom").onclick = async () => {
+      if (!activeIsHost) return;
+      if (confirm(isThai ? "⚠️ ต้องการยุบห้องนี้ทิ้งถาวรใช่หรือไม่?\nข้อมูลหมุด แชท และพิกัดทั้งหมดจะถูกลบ" : "Destroy this room permanently?")) {
+        try {
+          await fetch(BACKEND_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "destroy_room", roomId: activeSettingsRoomId, ownerId: myProfile.userId })
+          }).catch(() => {});
+        } catch(e) {}
+        const currentList = getStoredProjects();
+        const updated = currentList.filter(p => p.roomId !== activeSettingsRoomId);
+        saveProjects(updated);
+        localStorage.removeItem("SQUAD_HOST_" + activeSettingsRoomId);
+        localStorage.removeItem("SQUAD_SETTINGS_" + activeSettingsRoomId);
+        localStorage.removeItem("SQUAD_TARGET_" + activeSettingsRoomId);
+
+        modalSettings.style.display = "none";
+        alert(isThai ? "✅ ยุบห้องเรียบร้อยแล้ว" : "✅ Room destroyed.");
+        renderProjects();
+      }
+    };
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg fail:', err));
+    }
+  </script>
+</body>
+</html>
