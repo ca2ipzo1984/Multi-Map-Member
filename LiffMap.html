@@ -771,7 +771,7 @@
         title: "U-Nhai",
         gpsReady: "📡 GPS สดพร้อม",
         gpsOff: "⚠️ ไม่เปิด GPS",
-        searchPlaceholder: "🔍 พิมพ์ชื่อสถานที่ (เช่น สยาม, เซ็นทรัล)...",
+        searchPlaceholder: "🔍 พิมพ์ชื่อสถานที่, ซอย, ถนน หรือวางพิกัด GPS...",
         searchBtn: "ค้นหา",
         tapToPinTip: "👉 หรือ แตะบนแผนที่เพื่อปักหมุดเอง",
         searching: "🔍 กำลังค้นหา",
@@ -814,7 +814,7 @@
         title: "U-Nhai",
         gpsReady: "📡 Live GPS Ready",
         gpsOff: "⚠️ GPS Disabled",
-        searchPlaceholder: "🔍 Search places (e.g. Central, Mall, Airport)...",
+        searchPlaceholder: "🔍 Search place, street, area or paste GPS coordinates...",
         searchBtn: "Search",
         tapToPinTip: "👉 Or tap anywhere on map to pin",
         searching: "🔍 Searching",
@@ -1715,6 +1715,26 @@
       if (!q) return;
       searchResultsList.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem; color:#94a3b8;">${i18n.searching} "${q}"...</div>`;
 
+      // 1. ตรวจสอบว่าผู้ใช้วางพิกัด GPS ตรงๆ หรือลิงก์ Google Maps หรือไม่
+      const m1 = q.match(/^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/);
+      const m2 = q.match(/[@?&]q?=?(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)/);
+      const directCoords = m1 ? { lat: parseFloat(m1[1]), lng: parseFloat(m1[3]) } : (m2 ? { lat: parseFloat(m2[1]), lng: parseFloat(m2[2]) } : null);
+
+      if (directCoords && !isNaN(directCoords.lat) && !isNaN(directCoords.lng)) {
+        searchResultsList.innerHTML = "";
+        const coordDiv = document.createElement("div");
+        coordDiv.className = "search-result-item";
+        coordDiv.style.border = "1.5px solid #06c755";
+        coordDiv.style.background = "rgba(6,199,85,0.18)";
+        coordDiv.innerHTML = `<b>🎯 พิกัด GPS: ${directCoords.lat.toFixed(5)}, ${directCoords.lng.toFixed(5)}</b><div style="font-size:0.68rem; color:#38bdf8;">แตะเพื่อปักหมุดตรงพิกัดนี้ทันที</div>`;
+        coordDiv.onclick = (e) => {
+          e.stopPropagation();
+          setRendezvousPoint(isThai ? "พิกัดดาวเทียม GPS" : "GPS Location", directCoords.lat, directCoords.lng);
+        };
+        searchResultsList.appendChild(coordDiv);
+        return;
+      }
+
       // ตัวเลือกปักหมุดตรงพิกัดปัจจุบันด้วยชื่อนี้ทันที (เป็นตัวเลือกสำรองกันเหนียว)
       function renderDirectPinOption() {
         const directDiv = document.createElement("div");
@@ -1730,12 +1750,47 @@
         searchResultsList.appendChild(directDiv);
       }
 
-      try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=th&limit=5&addressdetails=1`;
+      async function fetchNominatim(queryStr) {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryStr)}&countrycodes=th&limit=5&addressdetails=1`;
         const res = await fetch(url, { headers: { "Accept-Language": isThai ? "th,en" : "en,th" } });
-        const data = await res.json();
+        return await res.json();
+      }
+
+      try {
+        let data = await fetchNominatim(q);
+        let usedFallback = false;
+        let fallbackQuery = null;
+
+        // หากไม่พบผลลัพธ์ ตรวจดูว่ามีการพิมพ์เลขที่บ้าน/หมู่บ้านหรือไม่ ถ้ามีให้ตัดเลขที่บ้านออกแล้วค้นหาชื่อซอย/ถนนแทน
+        if (!data || !data.length) {
+          const cleaned = q.replace(/^(บ้าน)?เลขที่\s*\d+[\/\d-]*\s*/i, '')
+                           .replace(/^\d+[\/\d-]*\s*/, '')
+                           .replace(/หมู่\s*\d+\s*/g, '')
+                           .replace(/ม\.\s*\d+\s*/g, '')
+                           .trim();
+          if (cleaned !== q && cleaned.length >= 2) {
+            fallbackQuery = cleaned;
+            try {
+              const fbData = await fetchNominatim(cleaned);
+              if (fbData && fbData.length) {
+                data = fbData;
+                usedFallback = true;
+              }
+            } catch(e) {}
+          }
+        }
+
         searchResultsList.innerHTML = "";
-        
+
+        if (usedFallback && fallbackQuery) {
+          const tipBox = document.createElement("div");
+          tipBox.style.cssText = "font-size:0.7rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px dashed #f59e0b; border-radius:8px; padding:6px 8px; line-height:1.35;";
+          tipBox.innerHTML = isThai
+            ? `💡 ฐานข้อมูลไม่พบเลขที่บ้าน แต่พบละแวก <b>"${fallbackQuery}"</b> (แตะเพื่อปักหมุดแล้วขยับไปยังตัวบ้านได้เลย)`
+            : `💡 House number not found in OSM, but found area <b>"${fallbackQuery}"</b>`;
+          searchResultsList.appendChild(tipBox);
+        }
+
         if (data && data.length) {
           data.forEach(item => {
             const lat = parseFloat(item.lat);
@@ -1750,7 +1805,15 @@
             };
             searchResultsList.appendChild(div);
           });
+        } else if (!usedFallback) {
+          const notFoundBox = document.createElement("div");
+          notFoundBox.style.cssText = "text-align:center; padding:8px; font-size:0.75rem; color:#94a3b8;";
+          notFoundBox.innerHTML = isThai
+            ? `${i18n.notFound}<br><span style="font-size:0.68rem; color:#38bdf8;">💡 แนะนำ: พิมพ์ชื่อซอย, ถนน, สถานที่ใกล้เคียง หรือแตะปักหมุดบนแผนที่</span>`
+            : i18n.notFound;
+          searchResultsList.appendChild(notFoundBox);
         }
+
         // แนบตัวเลือกปักหมุดตรงชื่อนี้ไว้ด้านล่างเสมอ
         renderDirectPinOption();
       } catch (err) {
